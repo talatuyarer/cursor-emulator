@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 
 from ..types import TaskStore
-from .utils import add_to_gitignore, detect_workspace_path
+from .utils import add_to_gitignore, copy_cursor_rules, detect_workspace_path
 
 
 class FilePersistence:
@@ -66,9 +66,13 @@ class FilePersistence:
             # Set appropriate permissions (user read/write only)
             os.chmod(self.file_path, 0o600)
 
-            # Add to .gitignore if this is the first time creating the file
+            # First-time setup actions
             if is_first_time:
+                # Add to .gitignore
                 add_to_gitignore(self.workspace_path, ".mcp-todos.json")
+
+                # Auto-copy Cursor rules file
+                copy_cursor_rules(self.workspace_path)
 
         except Exception:
             # Clean up temp file if something went wrong

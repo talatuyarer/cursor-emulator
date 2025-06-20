@@ -56,13 +56,9 @@ With this MCP server:
    }
    ```
 
-3. **Copy the rules file:**
+3. **Restart Cursor** and try: _"Create a todo list for adding user authentication"_
 
-   ```bash
-   cp claude-todo-emulator/.cursor/rules/task-management.mdc your-project/.cursor/rules/
-   ```
-
-4. **Restart Cursor** and try: _"Create a todo list for adding user authentication"_
+   The rules file will be automatically copied to `.cursor/rules/` on first use.
 
 ## What You Get
 
@@ -146,34 +142,14 @@ uv sync
 
 Most MCP-compatible IDEs use similar JSON configuration. Adjust the format as needed for your specific IDE.
 
-### Step 3: Add Intelligence Rules (Critical)
-
-**This step is required** - without it, your AI assistant won't know when to use todos.
-
-1. Copy the rules file:
-
-   ```bash
-   cp claude-todo-emulator/.cursor/rules/task-management.mdc your-project/.cursor/rules/
-   ```
-
-2. If `.cursor/rules/` doesn't exist, create it:
-   ```bash
-   mkdir -p your-project/.cursor/rules
-   ```
-
-This file teaches your AI assistant:
-
-- When to create todo lists (complex multi-step tasks)
-- When to skip todos (simple single tasks)
-- How to update task status and show progress
-- Business rules and validation constraints
-
-### Step 4: Test the Setup
+### Step 3: Test the Setup (Auto-Setup Included!)
 
 1. Restart your IDE completely
-2. Start a new conversation
+2. Start a new conversation  
 3. Try: _"Create a todo list for implementing user authentication"_
-4. Your AI should create a structured task list and start working
+4. The system will automatically copy the rules file on first use
+
+**No manual setup needed** - just install and use.
 
 ## Troubleshooting
 
@@ -213,6 +189,7 @@ This file teaches your AI assistant:
 - **Format**: JSON with timestamps and todo arrays
 - **Permissions**: User-only read/write (600)
 - **Backup**: Corrupted files automatically backed up
+- **Auto-Setup**: Rules file automatically copied on first use
 
 ### Workspace Detection
 
