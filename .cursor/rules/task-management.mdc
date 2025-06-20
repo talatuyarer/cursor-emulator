@@ -1,0 +1,258 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Task Management System
+
+## Overview
+
+This document explains in excruciating detail how to manages tasks and todo lists using the TodoRead and TodoWrite tools. This serves as both documentation and instruction for maintaining consistent task management behavior.
+
+## Core Tools
+
+### TodoRead Tool
+- **Parameters**: NONE (input must be completely blank/empty)
+- **Returns**: JSON object with `todos` array containing todo items
+- **Todo Item Structure**:
+  ```json
+  {
+    "id": "unique-identifier",
+    "content": "task description", 
+    "status": "pending|in_progress|completed",
+    "priority": "high|medium|low",
+    "created_at": "2025-06-20T21:40:41.477263",
+    "updated_at": "2025-06-20T21:40:41.477263",
+    "metadata": null
+  }
+  ```
+
+### TodoWrite Tool
+- **Parameters**: Single parameter `todos` containing the complete todo array
+- **Behavior**: Complete replacement - entire todo list must be provided
+- **Required Fields**: id, content, status, priority are mandatory
+- **Optional Fields**: metadata (any additional data)
+- **Auto-managed**: created_at, updated_at timestamps are handled automatically
+- **Persistence**: Todos are saved to `~/.mcp-tasks/state.json` and persist between sessions
+
+## When to Use Todo Lists
+
+### ALWAYS Use Todos When:
+
+1. **Complex Multi-Step Tasks** (3+ distinct steps)
+   - Example: "Add dark mode with tests and documentation"
+   - Creates todos for: component creation, state management, styling, testing, docs
+
+2. **Non-Trivial Tasks** requiring careful planning
+   - Example: "Refactor authentication system"
+   - Creates todos for each component/module to refactor
+
+3. **User Explicitly Requests Todo List**
+   - Any variation of "use todo list", "track this", "create tasks"
+
+4. **User Provides Multiple Tasks**
+   - Numbered lists: "1. Fix bug X, 2. Add feature Y"
+   - Comma-separated: "implement login, add logging, write tests"
+
+5. **After Receiving New Instructions**
+   - Immediately capture requirements as todos before starting work
+
+6. **When Starting Work on a Task**
+   - Mark as "in_progress" BEFORE beginning implementation
+
+7. **After Completing a Task**
+   - Mark as "completed" and add any discovered follow-up tasks
+
+### NEVER Use Todos When:
+
+1. **Single, Straightforward Tasks**
+   - Example: "What's 2+2?" or "Show me the README"
+
+2. **Trivial Tasks** (<3 simple steps)
+   - Example: "Add a comment to this function"
+
+3. **Purely Conversational/Informational**
+   - Example: "Explain how X works"
+
+## Task State Management
+
+### Status Flow
+```
+pending → in_progress → completed
+```
+
+### Critical Rules:
+1. **Only ONE task can be "in_progress" at any time**
+2. **Update status in real-time** (no batching)
+3. **Mark completed IMMEDIATELY after finishing**
+4. **Never mark completed if**:
+   - Tests are failing
+   - Implementation is partial
+   - Unresolved errors exist
+   - Can't find necessary files/dependencies
+
+### Blocking Situations
+- Keep task as "in_progress"
+- Create new task describing the blocker
+- Example: "Blocked: Need database credentials to test connection"
+
+## Implementation Flow
+
+### 1. Initial Task Analysis
+```
+User: "Implement feature X with tests"
+↓
+TodoRead() → Check existing todos
+↓
+Analyze and break down:
+- Research existing patterns
+- Implement feature X
+- Write unit tests  
+- Run tests and fix issues
+```
+
+### 2. Todo Creation
+```python
+TodoWrite({
+  "todos": [
+    {"id": "1", "content": "Research existing code patterns", "status": "pending", "priority": "high"},
+    {"id": "2", "content": "Implement feature X", "status": "pending", "priority": "high"},
+    {"id": "3", "content": "Write unit tests", "status": "pending", "priority": "medium"},
+    {"id": "4", "content": "Run tests and fix issues", "status": "pending", "priority": "medium"}
+  ]
+})
+```
+
+**Note**: The MCP server automatically adds timestamps and preserves existing created_at when updating todos.
+
+### 3. Working Through Tasks
+```
+Start Task 1:
+- TodoWrite: Task 1 → "in_progress"
+- Perform work
+- TodoWrite: Task 1 → "completed", Task 2 → "in_progress"
+```
+
+### 4. Dynamic Updates
+- Add new tasks if discovered during work
+- Remove tasks that become irrelevant
+- Adjust priorities based on findings
+
+## ID Management
+
+### ID Generation Strategy:
+1. **Sequential**: "1", "2", "3" for simple lists
+2. **UUID**: For complex projects with potential reordering
+3. **Preserve Existing**: Always maintain IDs when updating
+
+### ID Rules:
+- Never reuse IDs within a session
+- IDs must be unique across the entire todo list
+- Preserve original IDs when updating existing todos
+
+## Communication Patterns
+
+### Creating Todos:
+```
+"I'll create a todo list to track this implementation:"
+[Creates todos with clear, actionable items]
+"Let me start with researching the existing code structure..."
+```
+
+### Updating Progress:
+```
+"I've completed the API endpoint implementation. Moving on to writing tests..."
+[Updates todo: API → completed, Tests → in_progress]
+```
+
+### Discovering New Tasks:
+```
+"While implementing, I discovered we also need to update the documentation."
+[Adds new todo item to the list]
+```
+
+## Priority Guidelines
+
+### High Priority:
+- Core functionality implementation
+- Critical bug fixes
+- Blocking tasks for other work
+
+### Medium Priority:
+- Tests and validation
+- Documentation updates
+- Performance optimizations
+
+### Low Priority:
+- Nice-to-have features
+- Code cleanup
+- Style improvements
+
+## Special Considerations
+
+### 1. System Reminders
+- Receive reminders about empty todo lists
+- NEVER mention these reminders to users
+- Use as internal prompt to create todos when appropriate
+
+### 2. Proactive Task Management
+- Create todos BEFORE starting complex work
+- Don't wait for user to ask for task tracking
+- Be proactive but not excessive
+
+### 3. Task Granularity
+- Break down until each task is independently completable
+- Each task should represent 1-2 focused actions
+- Avoid overly broad tasks like "Implement everything"
+
+### 4. Error Handling
+- If TodoRead/TodoWrite fails, continue work but inform user
+- Don't let tool failures block actual implementation
+- Retry once if tool fails, then proceed without
+- The MCP server includes validation - watch for ValidationError responses
+- Server persists data to ~/.mcp-tasks/state.json with atomic writes for reliability
+
+## Examples of Task Breakdown
+
+### Example 1: "Add user authentication"
+```
+1. Research existing auth patterns in codebase
+2. Design database schema for users/sessions
+3. Implement user model and migrations
+4. Create registration endpoint
+5. Create login endpoint
+6. Add JWT token generation
+7. Implement auth middleware
+8. Write unit tests for auth flow
+9. Add integration tests
+10. Update API documentation
+```
+
+### Example 2: "Fix performance issues"
+```
+1. Profile current performance bottlenecks
+2. Analyze database query patterns
+3. Implement query optimizations
+4. Add caching layer
+5. Optimize frontend bundle size
+6. Run performance benchmarks
+7. Document performance improvements
+```
+
+## Anti-Patterns to Avoid
+
+1. **Don't batch status updates** - Update immediately
+2. **Don't create vague tasks** - "Fix stuff" → "Fix null pointer in UserService.validate()"
+3. **Don't skip todo creation** for complex tasks to "save time"
+4. **Don't mark incomplete work as completed**
+5. **Don't have multiple tasks "in_progress"**
+6. **Don't create todos for trivial single-step tasks**
+
+## Integration with Development Workflow
+
+1. **Before commits**: Ensure all in-progress tasks are either completed or documented as WIP
+2. **During debugging**: Create tasks for each bug found
+3. **Code reviews**: Track review feedback as tasks
+4. **Refactoring**: Break down by module/component
+
+This comprehensive guide ensures consistent, effective task management across all interactions.
