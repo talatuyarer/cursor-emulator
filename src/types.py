@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, TypedDict
 
 
 class TodoStatus(str, Enum):
@@ -21,20 +21,20 @@ class Todo(TypedDict):
     priority: TodoPriority
     created_at: str
     updated_at: str
-    metadata: Optional[Dict[str, Any]]
+    metadata: dict[str, Any] | None
 
 
 class TaskStore(TypedDict):
     lastModified: str
-    todos: List[Todo]
+    todos: list[Todo]
 
 
 class TodoReadResponse(TypedDict):
-    todos: List[Todo]
+    todos: list[Todo]
 
 
 class TodoWriteParams(TypedDict):
-    todos: List[Dict[str, Any]]
+    todos: list[dict[str, Any]]
 
 
 class TodoWriteResponse(TypedDict):

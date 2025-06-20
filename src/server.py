@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 from fastmcp import FastMCP
 
@@ -14,7 +14,7 @@ mcp = FastMCP(
 
 
 @mcp.tool
-async def TodoRead() -> Dict[str, Any]:
+async def TodoRead() -> dict[str, Any]:
     """
     Read the current task list.
 
@@ -32,7 +32,7 @@ async def TodoRead() -> Dict[str, Any]:
 
 
 @mcp.tool
-async def TodoWrite(params: Dict[str, Any]) -> Dict[str, Any]:
+async def TodoWrite(todos: list[dict[str, Any]]) -> dict[str, Any]:
     """
     Update the entire task list (complete replacement).
 
@@ -47,7 +47,7 @@ async def TodoWrite(params: Dict[str, Any]) -> Dict[str, Any]:
     Returns success status and count of todos written.
     """
     try:
-        return await todo_write(params)
+        return await todo_write({"todos": todos})
     except ValidationError as e:
         return {"error": {"code": "VALIDATION_ERROR", "message": str(e)}}
     except Exception as e:

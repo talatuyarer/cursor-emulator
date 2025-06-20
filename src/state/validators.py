@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 
 from ..types import TodoPriority, TodoStatus
 
@@ -9,7 +9,7 @@ class ValidationError(Exception):
     pass
 
 
-def validate_todos(todos: List[Dict[str, Any]]) -> None:
+def validate_todos(todos: list[dict[str, Any]]) -> None:
     """
     Validate a list of todos according to business rules:
     1. All todos must have required fields

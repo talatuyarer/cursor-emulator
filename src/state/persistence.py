@@ -2,7 +2,6 @@ import json
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 from ..types import TaskStore
 
@@ -10,7 +9,7 @@ from ..types import TaskStore
 class FilePersistence:
     """File-based persistence using JSON"""
 
-    def __init__(self, path: Optional[str] = None):
+    def __init__(self, path: str | None = None):
         if path is None:
             # Default to ~/.mcp-tasks/state.json
             home = Path.home()

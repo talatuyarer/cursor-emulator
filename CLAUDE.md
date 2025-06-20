@@ -87,3 +87,37 @@ Configure in IDE MCP settings with:
 ```
 
 The server runs indefinitely, handling TodoRead/TodoWrite requests from MCP clients.
+
+## Typing Guidelines (Python 3.11)
+
+**Full type annotations required for all functions and class attributes**
+
+**✅ Use Modern Built-in Types:**
+
+- `list[T]` instead of `List[T]`
+- `dict[K, V]` instead of `Dict[K, V]`
+- `tuple[T, ...]` instead of `Tuple[T, ...]`
+- `set[T]` instead of `Set[T]`
+
+**✅ Use Union Operator:**
+
+- `str | int` instead of `Union[str, int]`
+- `str | None` instead of `Optional[str]`
+
+**✅ Function Parameters (accept any sequence/mapping-like):**
+
+- `Sequence[T]` for any sequence-like objects
+- `Mapping[K, V]` for any mapping-like objects
+- `Iterable[T]` for iteration-only parameters
+- `MutableMapping[K, V]` for mutable mappings
+
+**✅ Return Types (be specific):**
+
+- `list[T]`, `dict[K, V]` for concrete return types
+
+**✅ Security & Advanced:**
+
+- `LiteralString` for SQL/injection-sensitive string parameters
+- `Protocol` for duck typing without inheritance
+- `TypedDict` for structured dictionaries
+- `Self` for method chaining return types

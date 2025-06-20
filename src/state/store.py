@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Any
 
 from ..types import TaskStore, Todo
 from .persistence import FilePersistence
@@ -9,7 +9,7 @@ from .validators import validate_todos
 class TodoStore:
     """Manages todo state with persistence"""
 
-    def __init__(self, persistence_path: Optional[str] = None):
+    def __init__(self, persistence_path: str | None = None):
         self.persistence = FilePersistence(persistence_path)
         self._initialized = False
 
@@ -19,13 +19,13 @@ class TodoStore:
             await self.persistence.load()
             self._initialized = True
 
-    async def read_todos(self) -> List[Todo]:
+    async def read_todos(self) -> list[Todo]:
         """Read all todos from the store"""
         await self.initialize()
         store = await self.persistence.load()
         return store["todos"]
 
-    async def write_todos(self, todos: List[Dict[str, any]]) -> int:
+    async def write_todos(self, todos: list[dict[str, Any]]) -> int:
         """
         Write todos to the store (complete replacement)
         Returns the number of todos written
