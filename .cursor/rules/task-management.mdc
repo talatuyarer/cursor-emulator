@@ -27,6 +27,9 @@ This document defines MANDATORY task management using TodoRead and TodoWrite too
 
 ## 🔥 MANDATORY WORKFLOW 🔥
 
+### RULE ZERO: TODO LIST IS THE SINGLE SOURCE OF TRUTH
+**NO EXPLORATION, RESEARCH, OR THINKING OUTSIDE THE TODO SYSTEM FOR COMPLEX TASKS**
+
 ### 1. Start Every Conversation
 
 **ALWAYS begin with TodoRead() for any non-trivial request:**
@@ -50,23 +53,42 @@ IF no todos exist:
 
 ### 2. Create Todos (for complex tasks)
 
+**🚨 CRITICAL: NO WORK BEFORE TODO CREATION 🚨**
+
 ```
-[Analyze user request]
-[Break down into 3-8 specific, actionable tasks]
-[Use TodoWrite() with complete todo array]
+[Receive complex request]
+[IMMEDIATELY create todos - NO preliminary exploration]
+[Include exploration/research as explicit todo items]
+[Use TodoWrite() with complete todo array including research tasks]
 [Display full list with visual indicators]
 ```
 
-### 3. Work Through Tasks
+**Example breakdown must include research/exploration:**
+```
+1. Analyze current codebase structure (research task)
+2. Research existing authentication patterns (exploration task)  
+3. Document findings and approach (planning task)
+4. Implement user model...
+```
+
+### 3. Work Through Tasks - ZERO DEVIATION
+
+**🚨 ABSOLUTE RULE: ALL WORK GOES THROUGH TODOS 🚨**
 
 ```
 FOR each task:
-1. Mark as "in_progress" BEFORE starting
+1. Mark as "in_progress" BEFORE ANY exploration/work
 2. Display updated full list
-3. Perform the work
+3. Perform ONLY the specific task (no side exploration)
 4. Mark as "completed" IMMEDIATELY after finishing
 5. Display updated full list
 6. Move to next task
+
+IF you want to explore during a task:
+- STOP the current task
+- Create new exploration todo
+- Mark current task as pending
+- Start exploration todo
 ```
 
 ## Tool Reference
@@ -151,12 +173,43 @@ Current todos:
 
 ## Anti-Patterns to Avoid
 
-1. **Don't batch status updates** - Update immediately
-2. **Don't create vague tasks** - "Fix stuff" → "Fix null pointer in UserService.validate()"
-3. **Don't skip todo creation** for complex tasks to "save time"
-4. **Don't mark incomplete work as completed**
-5. **Don't have multiple tasks "in_progress"**
-6. **Don't create todos for trivial single-step tasks**
-7. **🚨 NEVER skip TodoRead() at conversation start** 
-8. **🚨 NEVER update todos without showing visual status**
-9. **🚨 NEVER work on tasks without marking them in_progress first**
+### 🚨 CRITICAL VIOLATIONS 🚨
+
+1. **NEVER explore/research before creating todos**
+   - ❌ "Let me first understand the codebase..." → starts exploring
+   - ✅ Create todo: "Analyze current codebase structure" → mark in_progress → explore
+
+2. **NEVER do "preliminary investigation" outside todos**
+   - ❌ "I'll check what libraries you're using..." → starts searching
+   - ✅ Create todo: "Audit current dependencies and libraries" → track it
+
+3. **NEVER think through solutions without tracking**
+   - ❌ "I need to figure out the best approach..." → starts thinking
+   - ✅ Create todo: "Research and design authentication approach" → track it
+
+4. **NEVER side-quest during tasks**
+   - ❌ While implementing login, discover bug → fix bug immediately
+   - ✅ Stop, create new todo "Fix discovered bug in UserService", continue login
+
+### Standard Anti-Patterns
+
+5. **Don't batch status updates** - Update immediately
+6. **Don't create vague tasks** - "Fix stuff" → "Fix null pointer in UserService.validate()"
+7. **Don't skip todo creation** for complex tasks to "save time"
+8. **Don't mark incomplete work as completed**
+9. **Don't have multiple tasks "in_progress"**
+10. **Don't create todos for trivial single-step tasks**
+11. **🚨 NEVER skip TodoRead() at conversation start** 
+12. **🚨 NEVER update todos without showing visual status**
+13. **🚨 NEVER work on tasks without marking them in_progress first**
+
+## FORBIDDEN PHRASES (Auto-Violation)
+
+These phrases indicate you're about to violate the todo system:
+- "Let me first understand..."
+- "I'll start by exploring..."  
+- "Let me check what..."
+- "I need to investigate..."
+- "Before we begin, I'll..."
+
+**Correct approach: CREATE TODO FIRST, then investigate**

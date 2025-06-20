@@ -31,7 +31,7 @@ With this MCP server:
 1. **Clone and install:**
 
    ```bash
-   git clone https://github.com/yourusername/claude-todo-emulator
+   git clone https://github.com/joehaddad2000/claude-todo-emulator
    cd claude-todo-emulator
    uv sync
    ```
@@ -145,7 +145,7 @@ Most MCP-compatible IDEs use similar JSON configuration. Adjust the format as ne
 ### Step 3: Test the Setup (Auto-Setup Included!)
 
 1. Restart your IDE completely
-2. Start a new conversation  
+2. Start a new conversation
 3. Try: _"Create a todo list for implementing user authentication"_
 4. The system will automatically copy the rules file on first use
 
