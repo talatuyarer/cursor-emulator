@@ -5,6 +5,21 @@ alwaysApply: true
 ---
 # Task Management System
 
+## ⚠️ IMPORTANT: MCP Tool Availability Check ⚠️
+
+**Before following these rules, verify that TodoRead and TodoWrite tools are available:**
+
+If you cannot see or access the TodoRead/TodoWrite tools, this likely means:
+- The claude-todo-emulator MCP server is not installed/configured
+- The MCP server failed to start or crashed
+- The MCP server was explicitly disabled in settings
+- The tools are not properly exposed to your current environment
+
+**In such cases:**
+- These task management rules DO NOT apply
+- Proceed with normal task execution without todo tracking
+- Inform the user if they explicitly request todo functionality that the tools are unavailable
+
 ## Overview
 
 This document defines MANDATORY task management using TodoRead and TodoWrite tools. These tools provide persistent, project-scoped todo lists stored in `.mcp-todos.json` in the current working directory.
