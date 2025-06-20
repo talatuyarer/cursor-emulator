@@ -9,6 +9,16 @@ alwaysApply: true
 
 This document explains in excruciating detail how to manages tasks and todo lists using the TodoRead and TodoWrite tools. This serves as both documentation and instruction for maintaining consistent task management behavior.
 
+## 🔥 MANDATORY TODO WORKFLOW 🔥
+
+**CRITICAL: You MUST follow this workflow for EVERY conversation:**
+
+1. **ALWAYS start by checking todos**: Use `TodoRead()` at the beginning of ANY conversation or when receiving new instructions
+2. **ALWAYS create todos for non-trivial tasks**: If the task requires more than 1-2 simple steps, create todos IMMEDIATELY
+3. **ALWAYS update status in real-time**: Mark tasks in_progress BEFORE starting, completed IMMEDIATELY after finishing
+4. **ALWAYS show visual progress**: When updating todos, display current status using appropriate emojis
+5. **NEVER skip todo management**: Even if you think a task is "simple", check if todos exist first
+
 ## Core Tools
 
 ### TodoRead Tool
@@ -152,6 +162,24 @@ Start Task 1:
 
 ## Communication Patterns
 
+### MANDATORY: Start Every Conversation
+```
+"Let me check the current todo status first..."
+[Uses TodoRead() to check existing todos]
+[If todos exist, displays current status with visual progress]
+[If no todos exist but task is complex, creates them immediately]
+```
+
+### MANDATORY: Visual Progress Display
+**ALWAYS show current status after reading todos:**
+```
+Current todos:
+✅ Research existing code patterns (completed)
+🔄 Implement feature X (in_progress) 
+⏳ Write unit tests (pending)
+⏳ Run tests and fix issues (pending)
+```
+
 ### Creating Todos:
 ```
 "I'll create a todo list to track this implementation:"
@@ -159,10 +187,16 @@ Start Task 1:
 "Let me start with researching the existing code structure..."
 ```
 
-### Updating Progress:
+### MANDATORY: Status Updates with Visual Feedback
 ```
 "I've completed the API endpoint implementation. Moving on to writing tests..."
 [Updates todo: API → completed, Tests → in_progress]
+
+Updated todos:
+✅ Research existing code patterns (completed)
+✅ Implement API endpoint (completed)
+🔄 Write unit tests (in_progress)
+⏳ Run tests and fix issues (pending)
 ```
 
 ### Discovering New Tasks:
@@ -212,6 +246,40 @@ Start Task 1:
 - The MCP server includes validation - watch for ValidationError responses
 - Server persists data to ~/.mcp-tasks/state.json with atomic writes for reliability
 
+## 🚨 ENFORCEMENT RULES 🚨
+
+**These rules are MANDATORY and CANNOT be skipped:**
+
+### Rule 1: TodoRead FIRST
+- **ALWAYS** use `TodoRead()` as your FIRST action in any conversation
+- **ALWAYS** use `TodoRead()` when receiving new instructions from the user
+- **ALWAYS** use `TodoRead()` before starting any task
+- This applies even if you think there are no todos
+
+### Rule 2: MANDATORY FULL TODO LIST DISPLAY
+- **🚨 CRITICAL: ALWAYS display the COMPLETE todo list after EVERY TodoRead() or TodoWrite()**
+- **ALWAYS** show ALL todos with visual indicators (never just mention "updated")
+- Use emojis: ✅ for completed, 🔄 for in_progress, ⏳ for pending
+- Format: "emoji content (status)"
+- Show this EVERY time you read or update todos - NO EXCEPTIONS
+- User must see the full current state after every todo operation
+
+### Rule 3: Immediate Status Updates
+- Mark task as `in_progress` BEFORE starting work
+- Mark task as `completed` IMMEDIATELY after finishing
+- Update visual display every time you change status
+- Never batch updates - do them in real-time
+
+### Rule 4: Force Todo Creation
+- If user gives ANY multi-step task, create todos IMMEDIATELY
+- If no todos exist but you're about to do complex work, create them FIRST
+- Better to over-track than under-track
+
+### Rule 5: Progress Communication
+- ALWAYS mention which todo you're working on
+- ALWAYS show updated status after completing tasks
+- User should clearly see progression through the list
+
 ## Examples of Task Breakdown
 
 ### Example 1: "Add user authentication"
@@ -247,12 +315,12 @@ Start Task 1:
 4. **Don't mark incomplete work as completed**
 5. **Don't have multiple tasks "in_progress"**
 6. **Don't create todos for trivial single-step tasks**
+7. **🚨 NEVER skip TodoRead() at conversation start** 
+8. **🚨 NEVER update todos without showing visual status**
+9. **🚨 NEVER work on tasks without marking them in_progress first**
 
-## Integration with Development Workflow
+## Example Conversation Flow
 
-1. **Before commits**: Ensure all in-progress tasks are either completed or documented as WIP
-2. **During debugging**: Create tasks for each bug found
-3. **Code reviews**: Track review feedback as tasks
-4. **Refactoring**: Break down by module/component
-
-This comprehensive guide ensures consistent, effective task management across all interactions.
+### Perfect Todo Management Example:
+```
+User: "Help me add a login feature to my app"
