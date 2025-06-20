@@ -1,15 +1,38 @@
+from contextlib import asynccontextmanager
 from typing import Any
 
 from fastmcp import FastMCP
 
+from .state.store import store
 from .state.validators import ValidationError
 from .tools.todo_read import todo_read
 from .tools.todo_write import todo_write
+
+
+@asynccontextmanager
+async def lifespan(app: FastMCP):
+    """Initialize store on startup to ensure .mcp-todos.json exists"""
+    # Startup
+    await store.initialize()
+
+    # Force creation of the file and all associated setup if it doesn't exist
+    if not store.persistence.file_path.exists():
+        # Writing an empty todo list will trigger:
+        # 1. Creation of .mcp-todos.json
+        # 2. Adding to .gitignore
+        # 3. Copying Cursor rules
+        await store.write_todos([])
+
+    yield
+
+    # Shutdown (nothing to do)
+
 
 # Create the MCP server
 mcp = FastMCP(
     "Task Manager",
     instructions="Manages persistent todo lists with TodoRead and TodoWrite tools. TodoRead returns current todos, TodoWrite replaces entire list.",
+    lifespan=lifespan,
 )
 
 
