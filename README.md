@@ -1,26 +1,113 @@
 # Claude Todo MCP Server
 
-A Model Context Protocol (MCP) server that emulates Claude Code's task management system, providing persistent todo functionality for AI coding assistants in IDEs like Cursor, Windsurf, and others. Currently only tested and working on Cursor.
+**Add persistent task management to any AI coding assistant in Cursor, Windsurf, and other IDEs.**
 
-## Features
+This MCP server replicates Claude Code's todo system, giving your AI assistant the ability to:
 
-- **TodoRead**: Retrieve current task list
-- **TodoWrite**: Replace entire task list with validation
-- **Automatic Workspace Detection**: Uses `WORKSPACE_FOLDER_PATHS` environment variable
-- **Project-Scoped Storage**: Each project gets its own `.mcp-todos.json` file
-- **Auto-GitIgnore**: Automatically adds todo files to `.gitignore`
-- **Validation**: Enforces business rules (unique IDs, single in-progress task)
-- **Timestamps**: Automatic created_at/updated_at management
-- **Atomic Writes**: Safe file operations with backup on corruption
+- Track complex multi-step tasks across sessions
+- Break down large features into manageable pieces
+- Remember progress when you switch between projects
+- Enforce single in-progress task focus
 
-## Installation
+## Why You Want This
+
+Without task management, AI assistants:
+
+- ❌ Forget what they were working on between conversations
+- ❌ Lose track of multi-step implementations
+- ❌ Can't prioritize or organize complex work
+- ❌ Leave tasks half-finished when you switch contexts
+
+With this MCP server:
+
+- ✅ **Persistent memory** - Tasks survive across sessions
+- ✅ **Project-scoped** - Each workspace gets its own todo list
+- ✅ **Automatic tracking** - AI knows when to create/update tasks
+- ✅ **Progress visibility** - See exactly what's completed/pending
+- ✅ **Focus enforcement** - Only one task in-progress at a time
+
+## Quick Start
+
+1. **Clone and install:**
+
+   ```bash
+   git clone https://github.com/yourusername/claude-todo-emulator
+   cd claude-todo-emulator
+   uv sync
+   ```
+
+2. **Add to Cursor:** Create `.cursor/mcp.json` in your project:
+
+   ```json
+   {
+     "mcpServers": {
+       "task-manager": {
+         "command": "/Users/yourusername/.local/bin/uv",
+         "args": [
+           "--directory",
+           "/path/to/claude-todo-emulator",
+           "run",
+           "python",
+           "-m",
+           "src.server"
+         ]
+       }
+     }
+   }
+   ```
+
+3. **Copy the rules file:**
+
+   ```bash
+   cp claude-todo-emulator/.cursor/rules/task-management.mdc your-project/.cursor/rules/
+   ```
+
+4. **Restart Cursor** and try: _"Create a todo list for adding user authentication"_
+
+## What You Get
+
+Once configured, your AI assistant will automatically:
+
+**Create todos for complex tasks:**
+
+```
+You: "Add dark mode support with user preferences"
+AI: "I'll create a todo list for this multi-step feature:
+- ✅ Add theme context and state management
+- 🔄 Create dark mode CSS variables and styles
+- ⏳ Build settings UI for theme switching
+- ⏳ Add persistence to localStorage
+- ⏳ Update existing components for theme support"
+```
+
+**Track progress visually:**
+
+```
+You: "What's the status on the authentication system?"
+AI: "Current authentication tasks:
+- ✅ Set up JWT middleware
+- ✅ Create login/signup endpoints
+- 🔄 Building user profile management (in progress)
+- ⏳ Add password reset flow
+- ⏳ Implement role-based permissions"
+```
+
+**Maintain focus:**
+
+```
+You: "Let's also add email notifications"
+AI: "I'll add that to the todo list, but let me finish the current user profile task first to maintain focus."
+```
+
+## Detailed Setup
 
 ### Prerequisites
 
 - Python 3.11+
 - [uv](https://github.com/astral-sh/uv) package manager
+- Cursor, Windsurf, or MCP-compatible IDE
 
-### Setup
+### Step 1: Install the Server
 
 ```bash
 git clone https://github.com/yourusername/claude-todo-emulator
@@ -28,17 +115,17 @@ cd claude-todo-emulator
 uv sync
 ```
 
-## Configuration
+### Step 2: Configure Your IDE
 
-### For Cursor
+#### For Cursor
 
-Create `.cursor/mcp.json` in your project:
+1. Create `.cursor/mcp.json` in your project root:
 
 ```json
 {
   "mcpServers": {
     "task-manager": {
-      "command": "/path/to/uv",
+      "command": "/Users/yourusername/.local/bin/uv",
       "args": [
         "--directory",
         "/absolute/path/to/claude-todo-emulator",
@@ -52,97 +139,132 @@ Create `.cursor/mcp.json` in your project:
 }
 ```
 
-### For Other IDEs
+2. Find your uv path: `which uv`
+3. Update the paths in the config above
 
-Most MCP-compatible IDEs use similar configuration. Replace `/path/to/uv` with your actual uv path (find it with `which uv`) and update the directory path to your clone location.
+#### For Other IDEs
 
-### Cursor Rules Integration
+Most MCP-compatible IDEs use similar JSON configuration. Adjust the format as needed for your specific IDE.
 
-This repository includes `.cursor/rules/task-management.mdc` - a comprehensive rule file that teaches AI coding assistants how and when to use the todo system effectively. **Copy this file to your projects** to ensure the agent understands:
+### Step 3: Add Intelligence Rules (Critical)
+
+**This step is required** - without it, your AI assistant won't know when to use todos.
+
+1. Copy the rules file:
+
+   ```bash
+   cp claude-todo-emulator/.cursor/rules/task-management.mdc your-project/.cursor/rules/
+   ```
+
+2. If `.cursor/rules/` doesn't exist, create it:
+   ```bash
+   mkdir -p your-project/.cursor/rules
+   ```
+
+This file teaches your AI assistant:
 
 - When to create todo lists (complex multi-step tasks)
-- When NOT to create todos (simple single tasks)
-- How to manage task status and priorities
-- Business rules and constraints
+- When to skip todos (simple single tasks)
+- How to update task status and show progress
+- Business rules and validation constraints
 
-The rule file ensures consistent, effective task management across all your AI interactions.
+### Step 4: Test the Setup
 
-## Usage
+1. Restart your IDE completely
+2. Start a new conversation
+3. Try: _"Create a todo list for implementing user authentication"_
+4. Your AI should create a structured task list and start working
 
-Once configured, you can use the todo system in your AI conversations:
+## Troubleshooting
 
-```
-"Create a todo list for implementing user authentication"
-"Show me my current tasks"
-"Mark the first task as completed"
-```
+### "spawn uv ENOENT" Error
 
-## API Reference
+- **Problem**: System can't find uv command
+- **Solution**: Use full path like `/Users/yourusername/.local/bin/uv`
+- **Find path**: Run `which uv` in terminal
 
-### TodoRead
+### "No module named 'src'" Error
 
-- **Parameters**: None
-- **Returns**: `{todos: Todo[]}`
+- **Problem**: Incorrect module execution
+- **Solution**: Make sure you're using `python -m src.server` not `python main.py`
 
-### TodoWrite
+### AI Doesn't Create Todos
 
-- **Parameters**: `{todos: Todo[]}`
-- **Returns**: `{success: boolean, count: number}`
+- **Problem**: Missing or incorrect rules file
+- **Solution**: Verify `task-management.mdc` is in `.cursor/rules/` directory
+- **Check**: Rules file should be ~200 lines with detailed instructions
 
-### Todo Schema
+### Todos Appear in Wrong Directory
+
+- **Problem**: Workspace detection not working
+- **Solution**: Verify `WORKSPACE_FOLDER_PATHS` environment variable is set by IDE
+- **Check**: Look for `.mcp-todos.json` in your project root, not the MCP server directory
+
+### Permission Errors
+
+- **Problem**: Can't write to project directory
+- **Solution**: Ensure your IDE has write permissions to the project folder
+
+## How It Works
+
+### Storage
+
+- **Location**: `.mcp-todos.json` in each project directory
+- **Format**: JSON with timestamps and todo arrays
+- **Permissions**: User-only read/write (600)
+- **Backup**: Corrupted files automatically backed up
+
+### Workspace Detection
+
+- Uses `WORKSPACE_FOLDER_PATHS` environment variable from IDE
+- Falls back to current working directory if not found
+- Automatically adds `.mcp-todos.json` to `.gitignore`
+
+### API Reference
+
+**TodoRead**
+
+- Parameters: None
+- Returns: `{todos: Todo[]}`
+
+**TodoWrite**
+
+- Parameters: `{todos: Todo[]}`
+- Returns: `{success: boolean, count: number}`
+
+**Todo Schema**
 
 ```typescript
 {
-  id: string;                    // Unique identifier
-  content: string;               // Task description
+  id: string;
+  content: string;
   status: "pending" | "in_progress" | "completed";
   priority: "high" | "medium" | "low";
-  created_at: string;            // ISO timestamp (auto-managed)
-  updated_at: string;            // ISO timestamp (auto-managed)
-  metadata?: object;             // Optional additional data
+  created_at: string;
+  updated_at: string;
+  metadata?: object;
 }
 ```
 
-## Validation Rules
+### Validation Rules
 
-1. **Required Fields**: `id`, `content`, `status`, `priority`
-2. **Unique IDs**: All todo IDs must be unique
-3. **Single In-Progress**: Only one task can be "in_progress" at a time
-4. **Valid Enums**: Status and priority must use valid values
-
-## Storage
-
-- **Location**: `.mcp-todos.json` in each workspace/project directory
-- **Auto-Detection**: Uses `WORKSPACE_FOLDER_PATHS` environment variable from Cursor/VSCode
-- **Format**: JSON with `lastModified` timestamp and `todos` array
-- **Backup**: Corrupted files are backed up to `.json.backup`
-- **Permissions**: File is created with user-only read/write (600)
-- **GitIgnore**: Automatically adds `.mcp-todos.json` to project's `.gitignore`
-
-## Why This Exists
-
-This server replicates the task management system used by Claude Code, allowing other AI assistants to have similar todo functionality. It provides:
-
-- Structured task tracking for complex, multi-step operations
-- Persistent state across sessions
-- Project-scoped todos (each workspace gets its own list)
-- Automatic workspace detection (no manual configuration required)
-- Validation to maintain data integrity
-- A familiar interface for users coming from Claude Code
+1. All todo IDs must be unique
+2. Only one task can be "in_progress" at a time
+3. Required fields: id, content, status, priority
+4. Status and priority must use valid enum values
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Submit a pull request
+3. Add tests for new functionality
+4. Submit a pull request
 
 ## License
 
 MIT License - see LICENSE file for details.
 
-## Related
+## Related Projects
 
 - [Model Context Protocol](https://modelcontextprotocol.io/)
 - [FastMCP](https://gofastmcp.com/)
