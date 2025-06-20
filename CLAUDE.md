@@ -38,7 +38,8 @@ This is a FastMCP-based Model Context Protocol server that emulates Claude Code'
 
 **Persistence Layer** (`src/state/persistence.py`):
 
-- File-based storage to `~/.mcp-tasks/state.json`
+- File-based storage to `.mcp-todos.json` in current working directory
+- Project-scoped todos (each directory gets its own todo list)
 - Atomic writes using temporary files
 - Automatic backup creation on corruption
 - User-only file permissions (600)
@@ -70,7 +71,7 @@ The `.cursor/rules/task-management.mdc` file contains comprehensive rules for wh
 
 ### Running as MCP Server
 
-Configure in IDE MCP settings with:
+Configure in IDE MCP settings:
 
 ```json
 {
@@ -85,6 +86,19 @@ Configure in IDE MCP settings with:
   ]
 }
 ```
+
+**Automatic Workspace Detection**:
+
+- The server automatically detects your workspace directory using the `WORKSPACE_FOLDER_PATHS` environment variable set by Cursor/VSCode
+- Creates `.mcp-todos.json` in your current project directory
+- Each project gets its own isolated todo list
+- No manual configuration required!
+
+**How it works**:
+
+1. Cursor sets `WORKSPACE_FOLDER_PATHS=/path/to/your/project`
+2. Server detects this and stores todos in `/path/to/your/project/.mcp-todos.json`
+3. Switch projects → switch todo lists automatically
 
 The server runs indefinitely, handling TodoRead/TodoWrite requests from MCP clients.
 

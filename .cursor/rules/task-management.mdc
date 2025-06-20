@@ -7,278 +7,120 @@ alwaysApply: true
 
 ## Overview
 
-This document explains in excruciating detail how to manages tasks and todo lists using the TodoRead and TodoWrite tools. This serves as both documentation and instruction for maintaining consistent task management behavior.
+This document defines MANDATORY task management using TodoRead and TodoWrite tools. These tools provide persistent, project-scoped todo lists stored in `.mcp-todos.json` in the current working directory.
 
-## 🔥 MANDATORY TODO WORKFLOW 🔥
+## Decision Criteria: When to Use Todos
 
-**CRITICAL: You MUST follow this workflow for EVERY conversation:**
+### ✅ ALWAYS Use Todos For:
 
-1. **ALWAYS start by checking todos**: Use `TodoRead()` at the beginning of ANY conversation or when receiving new instructions
-2. **ALWAYS create todos for non-trivial tasks**: If the task requires more than 1-2 simple steps, create todos IMMEDIATELY
-3. **ALWAYS update status in real-time**: Mark tasks in_progress BEFORE starting, completed IMMEDIATELY after finishing
-4. **ALWAYS show visual progress**: When updating todos, display current status using appropriate emojis
-5. **NEVER skip todo management**: Even if you think a task is "simple", check if todos exist first
+1. **Multi-step tasks** (3+ distinct steps)
+2. **Non-trivial implementations** requiring planning
+3. **User explicitly requests task tracking**
+4. **User provides multiple tasks** (numbered lists, comma-separated)
+5. **Complex debugging or refactoring**
 
-## Core Tools
+### ❌ NEVER Use Todos For:
 
-### TodoRead Tool
-- **Parameters**: NONE (input must be completely blank/empty)
-- **Returns**: JSON object with `todos` array containing todo items
-- **Todo Item Structure**:
-  ```json
-  {
-    "id": "unique-identifier",
-    "content": "task description", 
-    "status": "pending|in_progress|completed",
-    "priority": "high|medium|low",
-    "created_at": "2025-06-20T21:40:41.477263",
-    "updated_at": "2025-06-20T21:40:41.477263",
-    "metadata": null
-  }
-  ```
+1. **Simple questions** ("What's 2+2?", "Show me the README")
+2. **Trivial single actions** ("Add a comment to this function")
+3. **Pure explanations** ("Explain how X works")
 
-### TodoWrite Tool
-- **Parameters**: Single parameter `todos` containing the complete todo array
-- **Behavior**: Complete replacement - entire todo list must be provided
-- **Required Fields**: id, content, status, priority are mandatory
-- **Optional Fields**: metadata (any additional data)
-- **Auto-managed**: created_at, updated_at timestamps are handled automatically
-- **Persistence**: Todos are saved to `~/.mcp-tasks/state.json` and persist between sessions
+## 🔥 MANDATORY WORKFLOW 🔥
 
-## When to Use Todo Lists
+### 1. Start Every Conversation
 
-### ALWAYS Use Todos When:
+**ALWAYS begin with TodoRead() for any non-trivial request:**
 
-1. **Complex Multi-Step Tasks** (3+ distinct steps)
-   - Example: "Add dark mode with tests and documentation"
-   - Creates todos for: component creation, state management, styling, testing, docs
-
-2. **Non-Trivial Tasks** requiring careful planning
-   - Example: "Refactor authentication system"
-   - Creates todos for each component/module to refactor
-
-3. **User Explicitly Requests Todo List**
-   - Any variation of "use todo list", "track this", "create tasks"
-
-4. **User Provides Multiple Tasks**
-   - Numbered lists: "1. Fix bug X, 2. Add feature Y"
-   - Comma-separated: "implement login, add logging, write tests"
-
-5. **After Receiving New Instructions**
-   - Immediately capture requirements as todos before starting work
-
-6. **When Starting Work on a Task**
-   - Mark as "in_progress" BEFORE beginning implementation
-
-7. **After Completing a Task**
-   - Mark as "completed" and add any discovered follow-up tasks
-
-### NEVER Use Todos When:
-
-1. **Single, Straightforward Tasks**
-   - Example: "What's 2+2?" or "Show me the README"
-
-2. **Trivial Tasks** (<3 simple steps)
-   - Example: "Add a comment to this function"
-
-3. **Purely Conversational/Informational**
-   - Example: "Explain how X works"
-
-## Task State Management
-
-### Status Flow
-```
-pending → in_progress → completed
-```
-
-### Critical Rules:
-1. **Only ONE task can be "in_progress" at any time**
-2. **Update status in real-time** (no batching)
-3. **Mark completed IMMEDIATELY after finishing**
-4. **Never mark completed if**:
-   - Tests are failing
-   - Implementation is partial
-   - Unresolved errors exist
-   - Can't find necessary files/dependencies
-
-### Blocking Situations
-- Keep task as "in_progress"
-- Create new task describing the blocker
-- Example: "Blocked: Need database credentials to test connection"
-
-## Implementation Flow
-
-### 1. Initial Task Analysis
-```
-User: "Implement feature X with tests"
-↓
-TodoRead() → Check existing todos
-↓
-Analyze and break down:
-- Research existing patterns
-- Implement feature X
-- Write unit tests  
-- Run tests and fix issues
-```
-
-### 2. Todo Creation
-```python
-TodoWrite({
-  "todos": [
-    {"id": "1", "content": "Research existing code patterns", "status": "pending", "priority": "high"},
-    {"id": "2", "content": "Implement feature X", "status": "pending", "priority": "high"},
-    {"id": "3", "content": "Write unit tests", "status": "pending", "priority": "medium"},
-    {"id": "4", "content": "Run tests and fix issues", "status": "pending", "priority": "medium"}
-  ]
-})
-```
-
-**Note**: The MCP server automatically adds timestamps and preserves existing created_at when updating todos.
-
-### 3. Working Through Tasks
-```
-Start Task 1:
-- TodoWrite: Task 1 → "in_progress"
-- Perform work
-- TodoWrite: Task 1 → "completed", Task 2 → "in_progress"
-```
-
-### 4. Dynamic Updates
-- Add new tasks if discovered during work
-- Remove tasks that become irrelevant
-- Adjust priorities based on findings
-
-## ID Management
-
-### ID Generation Strategy:
-1. **Sequential**: "1", "2", "3" for simple lists
-2. **UUID**: For complex projects with potential reordering
-3. **Preserve Existing**: Always maintain IDs when updating
-
-### ID Rules:
-- Never reuse IDs within a session
-- IDs must be unique across the entire todo list
-- Preserve original IDs when updating existing todos
-
-## Communication Patterns
-
-### MANDATORY: Start Every Conversation
 ```
 "Let me check the current todo status first..."
-[Uses TodoRead() to check existing todos]
-[If todos exist, displays current status with visual progress]
-[If no todos exist but task is complex, creates them immediately]
+[Uses TodoRead()]
+
+IF todos exist:
+- Display complete list with visual progress
+- Ask: "I found existing todos. Would you like to:
+  - Continue working on these tasks, or
+  - Clear them and start fresh?"
+- If clear: TodoWrite([]) → proceed with new request
+- If continue: work on existing todos
+
+IF no todos exist:
+- For complex tasks: create todos immediately  
+- For simple tasks: proceed without todos
 ```
 
-### MANDATORY: Visual Progress Display
-**ALWAYS show current status after reading todos:**
+### 2. Create Todos (for complex tasks)
+
+```
+[Analyze user request]
+[Break down into 3-8 specific, actionable tasks]
+[Use TodoWrite() with complete todo array]
+[Display full list with visual indicators]
+```
+
+### 3. Work Through Tasks
+
+```
+FOR each task:
+1. Mark as "in_progress" BEFORE starting
+2. Display updated full list
+3. Perform the work
+4. Mark as "completed" IMMEDIATELY after finishing
+5. Display updated full list
+6. Move to next task
+```
+
+## Tool Reference
+
+### TodoRead Tool
+- **Parameters**: NONE (empty input)
+- **Returns**: Array of todo objects
+- **Use**: Check existing todos, display current state
+
+### TodoWrite Tool  
+- **Parameters**: `todos` array (complete replacement)
+- **Behavior**: Replaces entire todo list
+- **Required fields**: id, content, status, priority
+- **Auto-managed**: created_at, updated_at timestamps
+
+**Todo Structure:**
+```json
+{
+  "id": "unique-identifier",
+  "content": "specific task description", 
+  "status": "pending|in_progress|completed",
+  "priority": "high|medium|low",
+  "metadata": null
+}
+```
+
+## 🚨 MANDATORY VISUAL DISPLAY 🚨
+
+**CRITICAL: Display COMPLETE todo list after EVERY TodoRead() or TodoWrite()**
+
+**Required format:**
 ```
 Current todos:
-✅ Research existing code patterns (completed)
-🔄 Implement feature X (in_progress) 
-⏳ Write unit tests (pending)
-⏳ Run tests and fix issues (pending)
+✅ Research existing patterns (completed)
+🔄 Implement login form (in_progress)  
+⏳ Add validation (pending)
+⏳ Write tests (pending)
 ```
 
-### Creating Todos:
-```
-"I'll create a todo list to track this implementation:"
-[Creates todos with clear, actionable items]
-"Let me start with researching the existing code structure..."
-```
+**Rules:**
+- ✅ = completed
+- 🔄 = in_progress  
+- ⏳ = pending
+- Show ALL todos, never just "updated"
+- Display after every todo operation
+- User must see full current state
 
-### MANDATORY: Status Updates with Visual Feedback
-```
-"I've completed the API endpoint implementation. Moving on to writing tests..."
-[Updates todo: API → completed, Tests → in_progress]
+## State Management Rules
 
-Updated todos:
-✅ Research existing code patterns (completed)
-✅ Implement API endpoint (completed)
-🔄 Write unit tests (in_progress)
-⏳ Run tests and fix issues (pending)
-```
-
-### Discovering New Tasks:
-```
-"While implementing, I discovered we also need to update the documentation."
-[Adds new todo item to the list]
-```
-
-## Priority Guidelines
-
-### High Priority:
-- Core functionality implementation
-- Critical bug fixes
-- Blocking tasks for other work
-
-### Medium Priority:
-- Tests and validation
-- Documentation updates
-- Performance optimizations
-
-### Low Priority:
-- Nice-to-have features
-- Code cleanup
-- Style improvements
-
-## Special Considerations
-
-### 1. System Reminders
-- Receive reminders about empty todo lists
-- NEVER mention these reminders to users
-- Use as internal prompt to create todos when appropriate
-
-### 2. Proactive Task Management
-- Create todos BEFORE starting complex work
-- Don't wait for user to ask for task tracking
-- Be proactive but not excessive
-
-### 3. Task Granularity
-- Break down until each task is independently completable
-- Each task should represent 1-2 focused actions
-- Avoid overly broad tasks like "Implement everything"
-
-### 4. Error Handling
-- If TodoRead/TodoWrite fails, continue work but inform user
-- Don't let tool failures block actual implementation
-- Retry once if tool fails, then proceed without
-- The MCP server includes validation - watch for ValidationError responses
-- Server persists data to ~/.mcp-tasks/state.json with atomic writes for reliability
-
-## 🚨 ENFORCEMENT RULES 🚨
-
-**These rules are MANDATORY and CANNOT be skipped:**
-
-### Rule 1: TodoRead FIRST
-- **ALWAYS** use `TodoRead()` as your FIRST action in any conversation
-- **ALWAYS** use `TodoRead()` when receiving new instructions from the user
-- **ALWAYS** use `TodoRead()` before starting any task
-- This applies even if you think there are no todos
-
-### Rule 2: MANDATORY FULL TODO LIST DISPLAY
-- **🚨 CRITICAL: ALWAYS display the COMPLETE todo list after EVERY TodoRead() or TodoWrite()**
-- **ALWAYS** show ALL todos with visual indicators (never just mention "updated")
-- Use emojis: ✅ for completed, 🔄 for in_progress, ⏳ for pending
-- Format: "emoji content (status)"
-- Show this EVERY time you read or update todos - NO EXCEPTIONS
-- User must see the full current state after every todo operation
-
-### Rule 3: Immediate Status Updates
-- Mark task as `in_progress` BEFORE starting work
-- Mark task as `completed` IMMEDIATELY after finishing
-- Update visual display every time you change status
-- Never batch updates - do them in real-time
-
-### Rule 4: Force Todo Creation
-- If user gives ANY multi-step task, create todos IMMEDIATELY
-- If no todos exist but you're about to do complex work, create them FIRST
-- Better to over-track than under-track
-
-### Rule 5: Progress Communication
-- ALWAYS mention which todo you're working on
-- ALWAYS show updated status after completing tasks
-- User should clearly see progression through the list
+1. **Only ONE task "in_progress" at any time**
+2. **Update status in real-time** (never batch)
+3. **Mark completed IMMEDIATELY** after finishing
+4. **Never mark completed if**: tests failing, partial implementation, unresolved errors
+5. **For blockers**: keep as "in_progress", create new task describing blocker
 
 ## Examples of Task Breakdown
 
@@ -318,9 +160,3 @@ Updated todos:
 7. **🚨 NEVER skip TodoRead() at conversation start** 
 8. **🚨 NEVER update todos without showing visual status**
 9. **🚨 NEVER work on tasks without marking them in_progress first**
-
-## Example Conversation Flow
-
-### Perfect Todo Management Example:
-```
-User: "Help me add a login feature to my app"

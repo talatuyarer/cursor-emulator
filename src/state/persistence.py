@@ -4,20 +4,20 @@ from datetime import datetime
 from pathlib import Path
 
 from ..types import TaskStore
+from .utils import add_to_gitignore, detect_workspace_path
 
 
 class FilePersistence:
     """File-based persistence using JSON"""
 
-    def __init__(self, path: str | None = None):
-        if path is None:
-            # Default to ~/.mcp-tasks/state.json
-            home = Path.home()
-            self.dir_path = home / ".mcp-tasks"
-            self.file_path = self.dir_path / "state.json"
+    def __init__(self, workspace_path: str | None = None):
+        if workspace_path:
+            workspace_dir = Path(workspace_path)
         else:
-            self.file_path = Path(path).expanduser()
-            self.dir_path = self.file_path.parent
+            workspace_dir = detect_workspace_path()
+
+        self.file_path = workspace_dir / ".mcp-todos.json"
+        self.workspace_path = workspace_dir
 
     async def load(self) -> TaskStore:
         """Load task store from file, creating default if not exists"""
@@ -51,8 +51,7 @@ class FilePersistence:
 
     async def save(self, store: TaskStore) -> None:
         """Save task store to file with atomic write"""
-        # Ensure directory exists
-        self.dir_path.mkdir(parents=True, exist_ok=True)
+        is_first_time = not self.file_path.exists()
 
         # Write to temporary file first (atomic write)
         temp_path = self.file_path.with_suffix(".json.tmp")
@@ -66,6 +65,10 @@ class FilePersistence:
 
             # Set appropriate permissions (user read/write only)
             os.chmod(self.file_path, 0o600)
+
+            # Add to .gitignore if this is the first time creating the file
+            if is_first_time:
+                add_to_gitignore(self.workspace_path, ".mcp-todos.json")
 
         except Exception:
             # Clean up temp file if something went wrong

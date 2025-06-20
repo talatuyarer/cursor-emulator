@@ -62,4 +62,5 @@ Thumbs.db
 
 # AI stuff
 .mcp-tasks/
+.mcp-todos.json
 .claude

@@ -9,8 +9,8 @@ from .validators import validate_todos
 class TodoStore:
     """Manages todo state with persistence"""
 
-    def __init__(self, persistence_path: str | None = None):
-        self.persistence = FilePersistence(persistence_path)
+    def __init__(self, workspace_path: str | None = None):
+        self.persistence = FilePersistence(workspace_path)
         self._initialized = False
 
     async def initialize(self) -> None:

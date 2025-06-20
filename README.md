@@ -1,12 +1,14 @@
 # Claude Todo MCP Server
 
-A Model Context Protocol (MCP) server that emulates Claude Code's task management system, providing persistent todo functionality for AI coding assistants in IDEs like Cursor, Windsurf, and others.
+A Model Context Protocol (MCP) server that emulates Claude Code's task management system, providing persistent todo functionality for AI coding assistants in IDEs like Cursor, Windsurf, and others. Currently only tested and working on Cursor.
 
 ## Features
 
 - **TodoRead**: Retrieve current task list
 - **TodoWrite**: Replace entire task list with validation
-- **Persistent Storage**: Tasks saved to `~/.mcp-tasks/state.json`
+- **Automatic Workspace Detection**: Uses `WORKSPACE_FOLDER_PATHS` environment variable
+- **Project-Scoped Storage**: Each project gets its own `.mcp-todos.json` file
+- **Auto-GitIgnore**: Automatically adds todo files to `.gitignore`
 - **Validation**: Enforces business rules (unique IDs, single in-progress task)
 - **Timestamps**: Automatic created_at/updated_at management
 - **Atomic Writes**: Safe file operations with backup on corruption
@@ -110,10 +112,12 @@ Once configured, you can use the todo system in your AI conversations:
 
 ## Storage
 
-- **Location**: `~/.mcp-tasks/state.json`
+- **Location**: `.mcp-todos.json` in each workspace/project directory
+- **Auto-Detection**: Uses `WORKSPACE_FOLDER_PATHS` environment variable from Cursor/VSCode
 - **Format**: JSON with `lastModified` timestamp and `todos` array
 - **Backup**: Corrupted files are backed up to `.json.backup`
 - **Permissions**: File is created with user-only read/write (600)
+- **GitIgnore**: Automatically adds `.mcp-todos.json` to project's `.gitignore`
 
 ## Why This Exists
 
@@ -121,6 +125,8 @@ This server replicates the task management system used by Claude Code, allowing 
 
 - Structured task tracking for complex, multi-step operations
 - Persistent state across sessions
+- Project-scoped todos (each workspace gets its own list)
+- Automatic workspace detection (no manual configuration required)
 - Validation to maintain data integrity
 - A familiar interface for users coming from Claude Code
 
