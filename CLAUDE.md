@@ -67,13 +67,19 @@ This is a FastMCP-based Model Context Protocol server that emulates Claude Code'
 
 ### Configuration Integration
 
-The `.cursor/rules/task-management.mdc` file contains comprehensive rules for when and how AI assistants should use this todo system. Copy this file to projects where you want consistent task management behavior.
+The server automatically copies two rules files to your `.cursor/rules/` directory:
+
+- `00-system-instructions.mdc` - Core behavioral enforcement (always check todos)
+- `01-task-management.mdc` - Detailed guidance (examples, anti-patterns, tool reference)
+
+These files ensure consistent task management behavior across all AI interactions in your project.
 
 ### Running as MCP Server
 
 The package includes a console script for easy execution. Configure in IDE MCP settings:
 
 **From PyPI (after publishing):**
+
 ```json
 {
   "mcpServers": {
@@ -86,17 +92,21 @@ The package includes a console script for easy execution. Configure in IDE MCP s
 ```
 
 **From local directory (for development):**
+
 ```json
 {
   "mcpServers": {
     "todo": {
       "command": "uvx",
-      "args": ["--from", "/path/to/claude-todo-emulator", "claude-todo-emulator"]
+      "args": [
+        "--from",
+        "/path/to/claude-todo-emulator",
+        "claude-todo-emulator"
+      ]
     }
   }
 }
 ```
-
 
 **Automatic Workspace Detection**:
 

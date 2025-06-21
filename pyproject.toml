@@ -4,8 +4,8 @@ package-data = { "src.state" = ["*.mdc"] }
 
 [project]
 name = "claude-todo-emulator"
-version = "0.1.0"
-description = "This is a MCP server that emulates Claude Code's task management system, providing persistent todo functionality for AI coding assistants in IDEs like Cursor, Windsurf, and others."
+version = "0.2.0"
+description = "This is an MCP server that emulates Claude Code's task management system, providing persistent todo functionality for AI coding assistants in IDEs like Cursor, Windsurf, and others."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"

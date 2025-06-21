@@ -52,34 +52,40 @@ def add_to_gitignore(workspace_path: Path, filename: str) -> None:
 
 def copy_cursor_rules(workspace_path: Path) -> bool:
     """
-    Copy task-management.mdc rules file to workspace .cursor/rules/ directory.
-    Always overwrites existing file to ensure latest version.
+    Copy both system-instructions and task-management rules files to workspace .cursor/rules/ directory.
+    Always overwrites existing files to ensure latest version.
 
     Args:
         workspace_path: Path to the workspace directory
 
     Returns:
-        True if rules file was copied, False if failed
+        True if both rules files were copied, False if any failed
     """
     # Create .cursor/rules directory if it doesn't exist
     cursor_rules_dir = workspace_path / ".cursor" / "rules"
     cursor_rules_dir.mkdir(parents=True, exist_ok=True)
 
-    # Target path for the rules file
-    target_rules_path = cursor_rules_dir / "task-management.mdc"
+    # Files to copy
+    rules_files = [
+        ("00-system-instructions.mdc", "00-system-instructions.mdc"),
+        ("01-task-management.mdc", "01-task-management.mdc"),
+    ]
 
-    try:
-        # Access the template file from the state package
-        template_content = (
-            files("src.state").joinpath("task-management.mdc").read_text()
-        )
+    success_count = 0
 
-        # Write the content to the target location
-        with open(target_rules_path, "w", encoding="utf-8") as f:
-            f.write(template_content)
-        return True
-    except (IOError, OSError, FileNotFoundError):
-        # If we can't copy, silently fail
-        pass
+    for source_filename, target_filename in rules_files:
+        target_path = cursor_rules_dir / target_filename
 
-    return False
+        try:
+            # Access the template file from the state package
+            template_content = files("src.state").joinpath(source_filename).read_text()
+
+            # Write the content to the target location
+            with open(target_path, "w", encoding="utf-8") as f:
+                f.write(template_content)
+            success_count += 1
+        except (IOError, OSError, FileNotFoundError):
+            # If we can't copy this file, continue with others
+            continue
+
+    return success_count == len(rules_files)
