@@ -28,37 +28,25 @@ With this MCP server:
 
 ## Quick Start
 
-1. **Clone and install:**
+**No installation required!** Just add this to your MCP configuration:
 
-   ```bash
-   git clone https://github.com/joehaddad2000/claude-todo-emulator
-   cd claude-todo-emulator
-   uv sync
-   ```
+```json
+{
+  "mcpServers": {
+    "task-manager": {
+      "command": "uvx",
+      "args": ["claude-todo-emulator"]
+    }
+  }
+}
+```
 
-2. **Add to Cursor:** Create `.cursor/mcp.json` in your project:
+- **Cursor**: Create `.cursor/mcp.json` in your project root
+- **Other IDEs**: Add to your MCP configuration file
 
-   ```json
-   {
-     "mcpServers": {
-       "task-manager": {
-         "command": "/Users/yourusername/.local/bin/uv",
-         "args": [
-           "--directory",
-           "/path/to/claude-todo-emulator",
-           "run",
-           "python",
-           "-m",
-           "src.server"
-         ]
-       }
-     }
-   }
-   ```
+**Restart your IDE** and try: _"Create a todo list for adding user authentication"_
 
-3. **Restart Cursor** and try: _"Create a todo list for adding user authentication"_
-
-   The rules file will be automatically copied to `.cursor/rules/` on first use.
+The system automatically downloads the package and sets up everything on first use!
 
 ## What You Get
 
@@ -95,109 +83,6 @@ You: "Let's also add email notifications"
 AI: "I'll add that to the todo list, but let me finish the current user profile task first to maintain focus."
 ```
 
-## Detailed Setup
-
-### Prerequisites
-
-- Python 3.11+
-- [uv](https://github.com/astral-sh/uv) package manager
-- Cursor, Windsurf, or MCP-compatible IDE
-
-### Step 1: Configure Your IDE
-
-#### Option A: Direct from PyPI (Recommended)
-
-```json
-{
-  "mcpServers": {
-    "task-manager": {
-      "command": "uvx",
-      "args": ["claude-todo-emulator"]
-    }
-  }
-}
-```
-
-#### Option B: Local Development
-
-```bash
-git clone https://github.com/joehaddad2000/claude-todo-emulator
-cd claude-todo-emulator
-```
-
-```json
-{
-  "mcpServers": {
-    "task-manager": {
-      "command": "uvx",
-      "args": [
-        "--from",
-        "/absolute/path/to/claude-todo-emulator",
-        "claude-todo-emulator"
-      ]
-    }
-  }
-}
-```
-
-#### For Other IDEs
-
-Most MCP-compatible IDEs use similar JSON configuration. Adjust the format as needed for your specific IDE.
-
-### Step 2: Test the Setup (Auto-Setup Included!)
-
-1. Restart your IDE completely
-2. Start a new conversation
-3. Try: _"Create a todo list for implementing user authentication"_
-4. The system will automatically copy the rules file on first use
-
-**No manual setup needed** - just install and use.
-
-## Troubleshooting
-
-### "spawn uv ENOENT" Error
-
-- **Problem**: System can't find uv command
-- **Solution**: Use full path like `/Users/yourusername/.local/bin/uv`
-- **Find path**: Run `which uv` in terminal
-
-### "No module named 'src'" Error
-
-- **Problem**: Incorrect module execution
-- **Solution**: Make sure you're using `python -m src.server` not `python main.py`
-
-### AI Doesn't Create Todos
-
-- **Problem**: Missing or incorrect rules file
-- **Solution**: Verify `task-management.mdc` is in `.cursor/rules/` directory
-- **Check**: Rules file should be ~200 lines with detailed instructions
-
-### Todos Appear in Wrong Directory
-
-- **Problem**: Workspace detection not working
-- **Solution**: Verify `WORKSPACE_FOLDER_PATHS` environment variable is set by IDE
-- **Check**: Look for `.mcp-todos.json` in your project root, not the MCP server directory
-
-### Permission Errors
-
-- **Problem**: Can't write to project directory
-- **Solution**: Ensure your IDE has write permissions to the project folder
-
-## How It Works
-
-### Storage
-
-- **Location**: `.mcp-todos.json` in each project directory
-- **Format**: JSON with timestamps and todo arrays
-- **Permissions**: User-only read/write (600)
-- **Auto-Setup**: Rules file automatically copied on first use
-
-### Workspace Detection
-
-- Uses `WORKSPACE_FOLDER_PATHS` environment variable from IDE
-- Falls back to current working directory if not found
-- Automatically adds `.mcp-todos.json` to `.gitignore`
-
 ### API Reference
 
 **TodoRead**
@@ -223,13 +108,6 @@ Most MCP-compatible IDEs use similar JSON configuration. Adjust the format as ne
   metadata?: object;
 }
 ```
-
-### Validation Rules
-
-1. All todo IDs must be unique
-2. Only one task can be "in_progress" at a time
-3. Required fields: id, content, status, priority
-4. Status and priority must use valid enum values
 
 ## Contributing
 
