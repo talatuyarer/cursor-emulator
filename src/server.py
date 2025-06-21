@@ -4,6 +4,7 @@ from typing import Any
 from fastmcp import FastMCP
 
 from .state.store import store
+from .state.utils import copy_cursor_rules
 from .state.validators import ValidationError
 from .tools.todo_read import todo_read
 from .tools.todo_write import todo_write
@@ -22,6 +23,9 @@ async def lifespan(app: FastMCP):
         # 2. Adding to .gitignore
         # 3. Copying Cursor rules
         await store.write_todos([])
+
+    # Always ensure rules file is up to date
+    copy_cursor_rules(store.persistence.workspace_path)
 
     yield
 
@@ -82,5 +86,9 @@ async def TodoWrite(todos: list[dict[str, Any]]) -> dict[str, Any]:
         }
 
 
-if __name__ == "__main__":
+def main():
     mcp.run()
+
+
+if __name__ == "__main__":
+    main()

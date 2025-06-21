@@ -1,0 +1,230 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Task Management System
+
+## ⚠️ IMPORTANT: MCP Tool Availability Check ⚠️
+
+**Before following these rules, verify that TodoRead and TodoWrite tools are available:**
+
+If you cannot see or access the TodoRead/TodoWrite tools, this likely means:
+- The claude-todo-emulator MCP server is not installed/configured
+- The MCP server failed to start or crashed
+- The MCP server was explicitly disabled in settings
+- The tools are not properly exposed to your current environment
+
+**In such cases:**
+- These task management rules DO NOT apply
+- Proceed with normal task execution without todo tracking
+- Inform the user if they explicitly request todo functionality that the tools are unavailable
+
+## Overview
+
+This document defines MANDATORY task management using TodoRead and TodoWrite tools. These tools provide persistent, project-scoped todo lists stored in `.mcp-todos.json` in the current working directory.
+
+## Decision Criteria: When to Use Todos
+
+### ✅ ALWAYS Use Todos For:
+
+1. **Multi-step tasks** (3+ distinct steps)
+2. **Non-trivial implementations** requiring planning
+3. **User explicitly requests task tracking**
+4. **User provides multiple tasks** (numbered lists, comma-separated)
+5. **Complex debugging or refactoring**
+
+### ❌ NEVER Use Todos For:
+
+1. **Simple questions** ("What's 2+2?", "Show me the README")
+2. **Trivial single actions** ("Add a comment to this function")
+3. **Pure explanations** ("Explain how X works")
+
+## 🔥 MANDATORY WORKFLOW 🔥
+
+### RULE ZERO: TODO LIST IS THE SINGLE SOURCE OF TRUTH
+**NO EXPLORATION, RESEARCH, OR THINKING OUTSIDE THE TODO SYSTEM FOR COMPLEX TASKS**
+
+### 1. Start Every Conversation
+
+**ALWAYS begin with TodoRead() for any non-trivial request:**
+
+```
+"Let me check the current todo status first..."
+[Uses TodoRead()]
+
+IF todos exist:
+- Display complete list with visual progress
+- Ask: "I found existing todos. Would you like to:
+  - Continue working on these tasks, or
+  - Clear them and start fresh?"
+- If clear: TodoWrite([]) → proceed with new request
+- If continue: work on existing todos
+
+IF no todos exist:
+- For complex tasks: create todos immediately  
+- For simple tasks: proceed without todos
+```
+
+### 2. Create Todos (for complex tasks)
+
+**🚨 CRITICAL: NO WORK BEFORE TODO CREATION 🚨**
+
+```
+[Receive complex request]
+[IMMEDIATELY create todos - NO preliminary exploration]
+[Include exploration/research as explicit todo items]
+[Use TodoWrite() with complete todo array including research tasks]
+[Display full list with visual indicators]
+```
+
+**Example breakdown must include research/exploration:**
+```
+1. Analyze current codebase structure (research task)
+2. Research existing authentication patterns (exploration task)  
+3. Document findings and approach (planning task)
+4. Implement user model...
+```
+
+### 3. Work Through Tasks - ZERO DEVIATION
+
+**🚨 ABSOLUTE RULE: ALL WORK GOES THROUGH TODOS 🚨**
+
+```
+FOR each task:
+1. Mark as "in_progress" BEFORE ANY exploration/work
+2. Display updated full list
+3. Perform ONLY the specific task (no side exploration)
+4. Mark as "completed" IMMEDIATELY after finishing
+5. Display updated full list
+6. Move to next task
+
+IF you want to explore during a task:
+- STOP the current task
+- Create new exploration todo
+- Mark current task as pending
+- Start exploration todo
+```
+
+## Tool Reference
+
+### TodoRead Tool
+- **Parameters**: NONE (empty input)
+- **Returns**: Array of todo objects
+- **Use**: Check existing todos, display current state
+
+### TodoWrite Tool  
+- **Parameters**: `todos` array (complete replacement)
+- **Behavior**: Replaces entire todo list
+- **Required fields**: id, content, status, priority
+- **Auto-managed**: created_at, updated_at timestamps
+
+**Todo Structure:**
+```json
+{
+  "id": "unique-identifier",
+  "content": "specific task description", 
+  "status": "pending|in_progress|completed",
+  "priority": "high|medium|low",
+  "metadata": null
+}
+```
+
+## 🚨 MANDATORY VISUAL DISPLAY 🚨
+
+**CRITICAL: Display COMPLETE todo list after EVERY TodoRead() or TodoWrite()**
+
+**Required format:**
+```
+Current todos:
+✅ Research existing patterns (completed)
+🔄 Implement login form (in_progress)  
+⏳ Add validation (pending)
+⏳ Write tests (pending)
+```
+
+**Rules:**
+- ✅ = completed
+- 🔄 = in_progress  
+- ⏳ = pending
+- Show ALL todos, never just "updated"
+- Display after every todo operation
+- User must see full current state
+
+## State Management Rules
+
+1. **Only ONE task "in_progress" at any time**
+2. **Update status in real-time** (never batch)
+3. **Mark completed IMMEDIATELY** after finishing
+4. **Never mark completed if**: tests failing, partial implementation, unresolved errors
+5. **For blockers**: keep as "in_progress", create new task describing blocker
+
+## Examples of Task Breakdown
+
+### Example 1: "Add user authentication"
+```
+1. Research existing auth patterns in codebase
+2. Design database schema for users/sessions
+3. Implement user model and migrations
+4. Create registration endpoint
+5. Create login endpoint
+6. Add JWT token generation
+7. Implement auth middleware
+8. Write unit tests for auth flow
+9. Add integration tests
+10. Update API documentation
+```
+
+### Example 2: "Fix performance issues"
+```
+1. Profile current performance bottlenecks
+2. Analyze database query patterns
+3. Implement query optimizations
+4. Add caching layer
+5. Optimize frontend bundle size
+6. Run performance benchmarks
+7. Document performance improvements
+```
+
+## Anti-Patterns to Avoid
+
+### 🚨 CRITICAL VIOLATIONS 🚨
+
+1. **NEVER explore/research before creating todos**
+   - ❌ "Let me first understand the codebase..." → starts exploring
+   - ✅ Create todo: "Analyze current codebase structure" → mark in_progress → explore
+
+2. **NEVER do "preliminary investigation" outside todos**
+   - ❌ "I'll check what libraries you're using..." → starts searching
+   - ✅ Create todo: "Audit current dependencies and libraries" → track it
+
+3. **NEVER think through solutions without tracking**
+   - ❌ "I need to figure out the best approach..." → starts thinking
+   - ✅ Create todo: "Research and design authentication approach" → track it
+
+4. **NEVER side-quest during tasks**
+   - ❌ While implementing login, discover bug → fix bug immediately
+   - ✅ Stop, create new todo "Fix discovered bug in UserService", continue login
+
+### Standard Anti-Patterns
+
+5. **Don't batch status updates** - Update immediately
+6. **Don't create vague tasks** - "Fix stuff" → "Fix null pointer in UserService.validate()"
+7. **Don't skip todo creation** for complex tasks to "save time"
+8. **Don't mark incomplete work as completed**
+9. **Don't have multiple tasks "in_progress"**
+10. **Don't create todos for trivial single-step tasks**
+11. **🚨 NEVER skip TodoRead() at conversation start** 
+12. **🚨 NEVER update todos without showing visual status**
+13. **🚨 NEVER work on tasks without marking them in_progress first**
+
+## FORBIDDEN PHRASES (Auto-Violation)
+
+These phrases indicate you're about to violate the todo system:
+- "Let me first understand..."
+- "I'll start by exploring..."  
+- "Let me check what..."
+- "I need to investigate..."
+- "Before we begin, I'll..."
+
+**Correct approach: CREATE TODO FIRST, then investigate**

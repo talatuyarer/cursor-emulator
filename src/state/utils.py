@@ -1,5 +1,5 @@
 import os
-import shutil
+from importlib.resources import files
 from pathlib import Path
 
 
@@ -53,12 +53,13 @@ def add_to_gitignore(workspace_path: Path, filename: str) -> None:
 def copy_cursor_rules(workspace_path: Path) -> bool:
     """
     Copy task-management.mdc rules file to workspace .cursor/rules/ directory.
+    Always overwrites existing file to ensure latest version.
 
     Args:
         workspace_path: Path to the workspace directory
 
     Returns:
-        True if rules file was copied, False if already exists or failed
+        True if rules file was copied, False if failed
     """
     # Create .cursor/rules directory if it doesn't exist
     cursor_rules_dir = workspace_path / ".cursor" / "rules"
@@ -67,23 +68,17 @@ def copy_cursor_rules(workspace_path: Path) -> bool:
     # Target path for the rules file
     target_rules_path = cursor_rules_dir / "task-management.mdc"
 
-    # Don't overwrite if already exists
-    if target_rules_path.exists():
-        return False
-
-    # Find the source rules file (relative to this module)
-    current_file = Path(__file__)
-    project_root = (
-        current_file.parent.parent.parent
-    )  # src/state/utils.py -> project root
-    source_rules_path = project_root / ".cursor" / "rules" / "task-management.mdc"
-
-    # Copy the rules file if source exists
     try:
-        if source_rules_path.exists():
-            shutil.copy2(source_rules_path, target_rules_path)
-            return True
-    except (IOError, OSError):
+        # Access the template file from the state package
+        template_content = (
+            files("src.state").joinpath("task-management.mdc").read_text()
+        )
+
+        # Write the content to the target location
+        with open(target_rules_path, "w", encoding="utf-8") as f:
+            f.write(template_content)
+        return True
+    except (IOError, OSError, FileNotFoundError):
         # If we can't copy, silently fail
         pass
 

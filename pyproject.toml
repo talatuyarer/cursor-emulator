@@ -1,7 +1,30 @@
+[tool.setuptools]
+packages = ["src", "src.state", "src.tools"]
+package-data = { "src.state" = ["*.mdc"] }
+
 [project]
 name = "claude-todo-emulator"
 version = "0.1.0"
 description = "This is a MCP server that emulates Claude Code's task management system, providing persistent todo functionality for AI coding assistants in IDEs like Cursor, Windsurf, and others."
 readme = "README.md"
 requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "Joe Haddad", email = "joehaddad129@gmail.com" }]
+keywords = ["mcp", "claude", "todo", "task-management", "ai-assistant"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
 dependencies = ["fastmcp>=2.8.1"]
+
+[project.urls]
+Homepage = "https://github.com/joehaddad2000/claude-todo-emulator"
+Repository = "https://github.com/joehaddad2000/claude-todo-emulator"
+Issues = "https://github.com/joehaddad2000/claude-todo-emulator/issues"
+
+[project.scripts]
+claude-todo-emulator = "src.server:main"

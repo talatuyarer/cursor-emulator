@@ -41,8 +41,8 @@ This is a FastMCP-based Model Context Protocol server that emulates Claude Code'
 - File-based storage to `.mcp-todos.json` in current working directory
 - Project-scoped todos (each directory gets its own todo list)
 - Atomic writes using temporary files
-- Automatic backup creation on corruption
 - User-only file permissions (600)
+- Automatic recovery from corrupted files
 
 **Validation Layer** (`src/state/validators.py`):
 
@@ -71,21 +71,32 @@ The `.cursor/rules/task-management.mdc` file contains comprehensive rules for wh
 
 ### Running as MCP Server
 
-Configure in IDE MCP settings:
+The package includes a console script for easy execution. Configure in IDE MCP settings:
 
+**From PyPI (after publishing):**
 ```json
 {
-  "command": "/path/to/uv",
-  "args": [
-    "--directory",
-    "/absolute/path/to/repo",
-    "run",
-    "python",
-    "-m",
-    "src.server"
-  ]
+  "mcpServers": {
+    "todo": {
+      "command": "uvx",
+      "args": ["claude-todo-emulator"]
+    }
+  }
 }
 ```
+
+**From local directory (for development):**
+```json
+{
+  "mcpServers": {
+    "todo": {
+      "command": "uvx",
+      "args": ["--from", "/path/to/claude-todo-emulator", "claude-todo-emulator"]
+    }
+  }
+}
+```
+
 
 **Automatic Workspace Detection**:
 

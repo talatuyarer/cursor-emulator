@@ -103,46 +103,48 @@ AI: "I'll add that to the todo list, but let me finish the current user profile 
 - [uv](https://github.com/astral-sh/uv) package manager
 - Cursor, Windsurf, or MCP-compatible IDE
 
-### Step 1: Install the Server
+### Step 1: Configure Your IDE
 
-```bash
-git clone https://github.com/yourusername/claude-todo-emulator
-cd claude-todo-emulator
-uv sync
-```
-
-### Step 2: Configure Your IDE
-
-#### For Cursor
-
-1. Create `.cursor/mcp.json` in your project root:
+#### Option A: Direct from PyPI (Recommended)
 
 ```json
 {
   "mcpServers": {
     "task-manager": {
-      "command": "/Users/yourusername/.local/bin/uv",
+      "command": "uvx",
+      "args": ["claude-todo-emulator"]
+    }
+  }
+}
+```
+
+#### Option B: Local Development
+
+```bash
+git clone https://github.com/joehaddad2000/claude-todo-emulator
+cd claude-todo-emulator
+```
+
+```json
+{
+  "mcpServers": {
+    "task-manager": {
+      "command": "uvx",
       "args": [
-        "--directory",
+        "--from",
         "/absolute/path/to/claude-todo-emulator",
-        "run",
-        "python",
-        "-m",
-        "src.server"
+        "claude-todo-emulator"
       ]
     }
   }
 }
 ```
 
-2. Find your uv path: `which uv`
-3. Update the paths in the config above
-
 #### For Other IDEs
 
 Most MCP-compatible IDEs use similar JSON configuration. Adjust the format as needed for your specific IDE.
 
-### Step 3: Test the Setup (Auto-Setup Included!)
+### Step 2: Test the Setup (Auto-Setup Included!)
 
 1. Restart your IDE completely
 2. Start a new conversation
@@ -188,7 +190,6 @@ Most MCP-compatible IDEs use similar JSON configuration. Adjust the format as ne
 - **Location**: `.mcp-todos.json` in each project directory
 - **Format**: JSON with timestamps and todo arrays
 - **Permissions**: User-only read/write (600)
-- **Backup**: Corrupted files automatically backed up
 - **Auto-Setup**: Rules file automatically copied on first use
 
 ### Workspace Detection

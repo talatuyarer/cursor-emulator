@@ -39,11 +39,7 @@ class FilePersistence:
                     "todos": data.get("todos", []),
                 }
         except (json.JSONDecodeError, IOError):
-            # If file is corrupted, backup and return empty store
-            backup_path = self.file_path.with_suffix(".json.backup")
-            if self.file_path.exists():
-                self.file_path.rename(backup_path)
-
+            # If file is corrupted, just return empty store
             return {
                 "lastModified": datetime.now().isoformat(),
                 "todos": [],
