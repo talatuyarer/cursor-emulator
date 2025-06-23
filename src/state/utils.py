@@ -78,7 +78,7 @@ def copy_cursor_rules(workspace_path: Path) -> bool:
 
         try:
             # Access the template file from the state package
-            template_content = files("src.state").joinpath(source_filename).read_text()
+            template_content = files("src.state").joinpath(source_filename).read_text(encoding="utf-8")
 
             # Write the content to the target location
             with open(target_path, "w", encoding="utf-8") as f:
