@@ -1,5 +1,8 @@
 # Claude Todo MCP Server
 
+[![PyPI Version](https://img.shields.io/pypi/v/claude-todo-emulator.svg)](https://pypi.org/project/claude-todo-emulator/)
+[![PyPI Downloads](https://static.pepy.tech/badge/claude-todo-emulator)](https://pepy.tech/projects/claude-todo-emulator)
+
 **Add persistent task management to any AI coding assistant in Cursor, Windsurf, and other IDEs.**
 
 This MCP server replicates Claude Code's todo system, giving your AI assistant the ability to:
