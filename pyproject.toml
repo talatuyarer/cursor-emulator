@@ -27,9 +27,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/joehaddad2000/claude-todo-emulator"
-Repository = "https://github.com/joehaddad2000/claude-todo-emulator"
-Issues = "https://github.com/joehaddad2000/claude-todo-emulator/issues"
+Homepage = "https://github.com/talatuyarer/cursor-emulator"
+Repository = "https://github.com/talatuyarer/cursor-emulator"
+Issues = "https://github.com/talatuyarer/cursor-emulator/issues"
 
 [project.scripts]
-claude-todo-emulator = "src.server:main"
+cursor-emulator = "src.server:main"

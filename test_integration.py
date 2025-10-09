@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Comprehensive Integration Test Suite for Claude Todo MCP Server
+Comprehensive Integration Test Suite for Cursor Emulator MCP Server
 
 This test suite:
 1. Starts the MCP server
