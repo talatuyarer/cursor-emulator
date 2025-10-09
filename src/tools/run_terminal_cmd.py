@@ -3,8 +3,10 @@ import os
 import re
 import subprocess
 import sys
+import time
+import uuid
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, Optional
 
 from ..state.validators import ValidationError
 
@@ -254,3 +256,304 @@ async def run_terminal_cmd(params: dict[str, Any]) -> dict[str, Any]:
     except Exception as e:
         # Wrap other errors
         raise ValidationError(f"Failed to execute command: {str(e)}")
+
+
+# Background process management
+background_processes: Dict[str, Dict[str, Any]] = {}
+
+
+async def get_background_process_status(process_id: str) -> dict[str, Any]:
+    """
+    Get status of a background process.
+    
+    Parameters:
+        process_id: ID of the background process to check
+        
+    Returns:
+        Dictionary with process status information
+    """
+    if not isinstance(process_id, str) or not process_id.strip():
+        raise ValidationError("Process ID must be a non-empty string")
+    
+    if process_id not in background_processes:
+        raise ValidationError(f"Background process '{process_id}' not found")
+    
+    process_info = background_processes[process_id]
+    process = process_info.get("process")
+    
+    # Check if process was killed or completed
+    if process is None and process_info.get("status") in ["killed", "completed", "error"]:
+        # Process has finished, return its final status
+        return {
+            "success": True,
+            "process_id": process_id,
+            "status": process_info["status"],
+            "command": process_info["command"],
+            "start_time": process_info["start_time"],
+            "end_time": process_info.get("end_time", time.time()),
+            "return_code": process_info.get("return_code"),
+            "stdout": process_info.get("stdout", ""),
+            "stderr": process_info.get("stderr", ""),
+            "runtime": process_info.get("end_time", time.time()) - process_info["start_time"]
+        }
+    elif process is None:
+        return {
+            "success": False,
+            "error": f"Process '{process_id}' is no longer running",
+            "process_id": process_id,
+            "status": "not_found"
+        }
+    
+    # Check if process is still running
+    if process.returncode is not None:
+        # Process has completed
+        process_info["status"] = "completed"
+        process_info["end_time"] = time.time()
+        process_info["return_code"] = process.returncode
+        
+        return {
+            "success": True,
+            "process_id": process_id,
+            "status": "completed",
+            "command": process_info["command"],
+            "start_time": process_info["start_time"],
+            "end_time": process_info["end_time"],
+            "return_code": process.returncode,
+            "stdout": process_info.get("stdout", ""),
+            "stderr": process_info.get("stderr", ""),
+            "runtime": process_info["end_time"] - process_info["start_time"]
+        }
+    else:
+        # Process is still running
+        runtime = time.time() - process_info["start_time"]
+        return {
+            "success": True,
+            "process_id": process_id,
+            "status": "running",
+            "command": process_info["command"],
+            "start_time": process_info["start_time"],
+            "runtime": runtime,
+            "return_code": None
+        }
+
+
+async def kill_background_process(process_id: str) -> dict[str, Any]:
+    """
+    Kill a background process.
+    
+    Parameters:
+        process_id: ID of the background process to kill
+        
+    Returns:
+        Dictionary with kill result
+    """
+    if not isinstance(process_id, str) or not process_id.strip():
+        raise ValidationError("Process ID must be a non-empty string")
+    
+    if process_id not in background_processes:
+        raise ValidationError(f"Background process '{process_id}' not found")
+    
+    process_info = background_processes[process_id]
+    process = process_info.get("process")
+    
+    if process is None:
+        return {
+            "success": False,
+            "error": f"Process '{process_id}' is no longer running",
+            "process_id": process_id
+        }
+    
+    try:
+        # Kill the process
+        process.terminate()
+        
+        # Wait a bit for graceful termination
+        try:
+            await asyncio.wait_for(process.wait(), timeout=5.0)
+        except asyncio.TimeoutError:
+            # Force kill if it doesn't terminate gracefully
+            process.kill()
+            await process.wait()
+        
+        # Update process info
+        process_info["status"] = "killed"
+        process_info["end_time"] = time.time()
+        process_info["return_code"] = process.returncode
+        
+        # Remove the process from the monitoring task
+        process_info["process"] = None
+        
+        return {
+            "success": True,
+            "process_id": process_id,
+            "status": "killed",
+            "command": process_info["command"],
+            "start_time": process_info["start_time"],
+            "end_time": process_info["end_time"],
+            "return_code": process.returncode,
+            "runtime": process_info["end_time"] - process_info["start_time"]
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"Failed to kill process '{process_id}': {str(e)}",
+            "process_id": process_id
+        }
+
+
+async def list_background_processes() -> dict[str, Any]:
+    """
+    List all background processes.
+    
+    Returns:
+        Dictionary with list of background processes
+    """
+    processes = []
+    
+    for process_id, process_info in background_processes.items():
+        process = process_info.get("process")
+        
+        if process is None:
+            status = "not_found"
+            return_code = None
+            runtime = 0
+        elif process.returncode is not None:
+            status = "completed"
+            return_code = process.returncode
+            runtime = (process_info.get("end_time", time.time()) - process_info["start_time"])
+        else:
+            status = "running"
+            return_code = None
+            runtime = time.time() - process_info["start_time"]
+        
+        processes.append({
+            "process_id": process_id,
+            "command": process_info["command"],
+            "status": status,
+            "start_time": process_info["start_time"],
+            "runtime": runtime,
+            "return_code": return_code
+        })
+    
+    return {
+        "success": True,
+        "processes": processes,
+        "total_processes": len(processes),
+        "running_processes": len([p for p in processes if p["status"] == "running"]),
+        "completed_processes": len([p for p in processes if p["status"] == "completed"])
+    }
+
+
+async def run_background_command(command: str, cwd: Optional[str] = None, 
+                               sandbox: bool = True) -> dict[str, Any]:
+    """
+    Run a command in the background.
+    
+    Parameters:
+        command: Command to execute
+        cwd: Working directory (optional)
+        sandbox: Enable sandbox security (default: True)
+        
+    Returns:
+        Dictionary with process information
+    """
+    # Validate command
+    validate_command_security(command)
+    
+    # Get workspace root
+    workspace_root = get_workspace_root()
+    
+    # Validate working directory
+    if cwd:
+        if not isinstance(cwd, str):
+            raise ValidationError("Working directory must be a string")
+        working_dir = Path(cwd).resolve()
+        if not working_dir.exists() or not working_dir.is_dir():
+            raise ValidationError(f"Working directory does not exist or is not a directory: {cwd}")
+        
+        # Security: Ensure working directory is within workspace
+        if sandbox:
+            validate_working_directory(working_dir, workspace_root)
+    else:
+        # Default to workspace root for security
+        working_dir = workspace_root
+    
+    # Generate unique process ID
+    process_id = str(uuid.uuid4())
+    
+    try:
+        # Start the process
+        process = await asyncio.create_subprocess_shell(
+            command,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            cwd=working_dir
+        )
+        
+        # Store process information
+        background_processes[process_id] = {
+            "process": process,
+            "command": command,
+            "cwd": str(working_dir),
+            "start_time": time.time(),
+            "status": "running",
+            "sandbox_enabled": sandbox
+        }
+        
+        # Start monitoring task
+        asyncio.create_task(monitor_background_process(process_id))
+        
+        return {
+            "success": True,
+            "process_id": process_id,
+            "command": command,
+            "cwd": str(working_dir),
+            "status": "started",
+            "start_time": background_processes[process_id]["start_time"],
+            "sandbox_enabled": sandbox
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"Failed to start background process: {str(e)}",
+            "command": command,
+            "cwd": str(working_dir),
+            "sandbox_enabled": sandbox
+        }
+
+
+async def monitor_background_process(process_id: str):
+    """
+    Monitor a background process and update its status when it completes.
+    
+    Parameters:
+        process_id: ID of the background process to monitor
+    """
+    if process_id not in background_processes:
+        return
+    
+    process_info = background_processes[process_id]
+    process = process_info.get("process")
+    
+    if process is None:
+        return
+    
+    try:
+        # Wait for process to complete
+        stdout_bytes, stderr_bytes = await process.communicate()
+        
+        # Update process info
+        process_info["status"] = "completed"
+        process_info["end_time"] = time.time()
+        process_info["return_code"] = process.returncode
+        process_info["stdout"] = stdout_bytes.decode('utf-8', errors='replace')
+        process_info["stderr"] = stderr_bytes.decode('utf-8', errors='replace')
+        
+    except Exception as e:
+        # Process was killed or errored
+        process_info["status"] = "error"
+        process_info["end_time"] = time.time()
+        process_info["error"] = str(e)
+        process_info["return_code"] = process.returncode if process.returncode is not None else -1

@@ -523,67 +523,6 @@ async def GlobFileSearch(glob_pattern: str, target_directory: str | None = None,
         }
 
 
-@mcp.tool
-async def GetBackgroundProcessStatus(process_id: str) -> dict[str, Any]:
-    """
-    Get status of a background process.
-
-    Parameters:
-        process_id: Process ID to check
-
-    Returns:
-        Dictionary with process status information including runtime, output, and completion status
-    """
-    try:
-        return await get_background_process_status(process_id)
-    except Exception as e:
-        return {
-            "error": {
-                "code": "PROCESS_ERROR",
-                "message": f"Failed to get process status: {str(e)}",
-            }
-        }
-
-
-@mcp.tool
-async def KillBackgroundProcess(process_id: str) -> dict[str, Any]:
-    """
-    Kill a background process.
-
-    Parameters:
-        process_id: Process ID to kill
-
-    Returns:
-        Dictionary with kill result and process status
-    """
-    try:
-        return await kill_background_process(process_id)
-    except Exception as e:
-        return {
-            "error": {
-                "code": "PROCESS_ERROR",
-                "message": f"Failed to kill process: {str(e)}",
-            }
-        }
-
-
-@mcp.tool
-async def ListBackgroundProcesses() -> dict[str, Any]:
-    """
-    List all background processes.
-
-    Returns:
-        Dictionary with list of all background processes and their status
-    """
-    try:
-        return await list_background_processes()
-    except Exception as e:
-        return {
-            "error": {
-                "code": "PROCESS_ERROR",
-                "message": f"Failed to list processes: {str(e)}",
-            }
-        }
 
 
 @mcp.tool
@@ -795,6 +734,69 @@ async def UpdateMemory(action: str, key: str | None = None, content: str | None 
             "total_memories": 0,
             "error_code": "OPERATION_ERROR",
             "error_details": str(e)
+        }
+
+
+@mcp.tool
+async def GetBackgroundProcessStatus(process_id: str) -> dict[str, Any]:
+    """
+    Get status of a background process.
+
+    Parameters:
+        process_id: ID of the background process to check
+
+    Returns:
+        Dictionary with process status information including runtime, output, and completion status
+    """
+    try:
+        return await get_background_process_status(process_id)
+    except Exception as e:
+        return {
+            "error": {
+                "code": "PROCESS_ERROR",
+                "message": f"Failed to get process status: {str(e)}",
+            }
+        }
+
+
+@mcp.tool
+async def KillBackgroundProcess(process_id: str) -> dict[str, Any]:
+    """
+    Kill a background process.
+
+    Parameters:
+        process_id: Process ID to kill
+
+    Returns:
+        Dictionary with kill result and process status
+    """
+    try:
+        return await kill_background_process(process_id)
+    except Exception as e:
+        return {
+            "error": {
+                "code": "PROCESS_ERROR",
+                "message": f"Failed to kill process: {str(e)}",
+            }
+        }
+
+
+@mcp.tool
+async def ListBackgroundProcesses() -> dict[str, Any]:
+    """
+    List all background processes.
+
+    Returns:
+        Dictionary with list of all background processes and their status
+    """
+    try:
+        return await list_background_processes()
+    except Exception as e:
+        return {
+            "error": {
+                "code": "PROCESS_ERROR",
+                "message": f"Failed to list processes: {str(e)}",
+            }
         }
 
 
