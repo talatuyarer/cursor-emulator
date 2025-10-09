@@ -18,6 +18,13 @@ def detect_workspace_path() -> Path:
     return Path.cwd()
 
 
+def get_workspace_path() -> Path:
+    """
+    Get the workspace path (alias for detect_workspace_path for compatibility).
+    """
+    return detect_workspace_path()
+
+
 def add_to_gitignore(workspace_path: Path, filename: str) -> None:
     """
     Add filename to .gitignore if it exists and entry is not already present.
