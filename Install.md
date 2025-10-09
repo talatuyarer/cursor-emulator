@@ -1,17 +1,18 @@
-# Installation Guide: Gemini Code Assist + IntelliJ IDEA
+# Installation Guide: Cursor Emulator - Universal AI Code Assistant
 
-This guide shows you how to integrate the **Claude Todo MCP Server** (now a comprehensive development toolkit with 19 tools) with **Gemini Code Assist** in **IntelliJ IDEA**.
+This guide shows you how to integrate **Cursor Emulator** (a comprehensive MCP server with 19 advanced tools) with **Gemini Code Assist** in **IntelliJ IDEA** to transform your AI assistant into a powerful code assistant.
 
 ## 🎯 What You'll Get
 
-Your Gemini Code Assist will gain access to **19 powerful development tools**:
+Your Gemini Code Assist will gain access to **19 powerful development tools** that replicate all the capabilities of Claude Code:
 
-- **📋 Task Management**: Advanced todo tracking with visual indicators
-- **💻 Terminal Operations**: Shell execution with background processes
-- **🔍 Code Analysis**: Multi-language linting and semantic search
-- **📝 File Operations**: Atomic editing, search/replace, file management
-- **🌐 Web & GitHub**: Real-time search, PR fetching, patch application
-- **🧠 Memory Management**: Persistent context across sessions
+- **📋 Advanced Task Management**: Visual indicators, merge capabilities, and business rules
+- **💻 Terminal & Process Management**: Shell execution with background processes and monitoring
+- **🔍 Code Analysis & Quality**: Multi-language linting, semantic search, and pattern matching
+- **📝 File Operations**: Atomic editing, search/replace, and safe file management
+- **🌐 Web & GitHub Integration**: Real-time search, PR fetching, and patch application
+- **🧠 Memory & Context Management**: Persistent knowledge storage across sessions
+- **⚡ Performance**: Sub-millisecond operations with parallel execution support
 
 ## 📋 Prerequisites
 
@@ -25,6 +26,15 @@ Your Gemini Code Assist will gain access to **19 powerful development tools**:
 - **macOS**: 10.15+ (Catalina or later)
 - **Windows**: Windows 10 version 1903 or later
 - **Linux**: Ubuntu 18.04+ or equivalent
+
+### What This Enables
+With Cursor Emulator, your Gemini Code Assist will be able to:
+- Execute terminal commands and manage background processes
+- Perform multi-language code analysis and linting
+- Edit files atomically with search/replace operations
+- Access web search and GitHub integration
+- Maintain persistent memory across development sessions
+- Work with multiple tools in parallel for maximum efficiency
 
 ## 🚀 Installation Methods
 
@@ -52,9 +62,9 @@ pip install uv
 ```json
 {
   "mcpServers": {
-    "claude-todo-emulator": {
+    "cursor-emulator": {
       "command": "uvx",
-      "args": ["claude-todo-emulator"],
+      "args": ["cursor-emulator"],
       "env": {
         "WORKSPACE_FOLDER_PATHS": "${workspaceRoot}"
       }
@@ -71,8 +81,8 @@ The system will automatically download and set up the MCP server on first use!
 
 **Step 1: Clone the Repository**
 ```bash
-git clone https://github.com/your-username/claude-todo-emulator.git
-cd claude-todo-emulator
+git clone https://github.com/your-username/cursor-emulator.git
+cd cursor-emulator
 ```
 
 **Step 2: Install Dependencies**
@@ -90,10 +100,10 @@ pip install -e .
 ```json
 {
   "mcpServers": {
-    "claude-todo-emulator": {
+    "cursor-emulator": {
       "command": "uvx",
       "args": ["."],
-      "cwd": "/path/to/claude-todo-emulator",
+      "cwd": "/path/to/cursor-emulator",
       "env": {
         "WORKSPACE_FOLDER_PATHS": "${workspaceRoot}"
       }
@@ -106,10 +116,10 @@ pip install -e .
 ```json
 {
   "mcpServers": {
-    "claude-todo-emulator": {
+    "cursor-emulator": {
       "command": "python",
       "args": ["-m", "src.server"],
-      "cwd": "/path/to/claude-todo-emulator",
+      "cwd": "/path/to/cursor-emulator",
       "env": {
         "WORKSPACE_FOLDER_PATHS": "${workspaceRoot}"
       }
@@ -134,17 +144,17 @@ CMD ["python", "-m", "src.server"]
 
 **Step 2: Build and Run**
 ```bash
-docker build -t claude-todo-emulator .
-docker run -p 8000:8000 -v $(pwd):/workspace claude-todo-emulator
+docker build -t cursor-emulator .
+docker run -p 8000:8000 -v $(pwd):/workspace cursor-emulator
 ```
 
 **Step 3: Configure MCP**
 ```json
 {
   "mcpServers": {
-    "claude-todo-emulator": {
+    "cursor-emulator": {
       "command": "docker",
-      "args": ["exec", "-i", "claude-todo-emulator", "python", "-m", "src.server"],
+      "args": ["exec", "-i", "cursor-emulator", "python", "-m", "src.server"],
       "env": {
         "WORKSPACE_FOLDER_PATHS": "${workspaceRoot}"
       }
@@ -178,7 +188,7 @@ When you run `uvx .` in a local repository:
 
 ```bash
 # Navigate to your local repository
-cd /path/to/claude-todo-emulator
+cd /path/to/cursor-emulator
 
 # Test with uvx
 uvx . --help
@@ -222,9 +232,9 @@ uvx . --help
 ```json
 {
   "mcpServers": {
-    "claude-todo-emulator": {
+    "cursor-emulator": {
       "command": "uvx",
-      "args": ["claude-todo-emulator"],
+      "args": ["cursor-emulator"],
       "env": {
         "WORKSPACE_FOLDER_PATHS": "${workspaceRoot}",
         "MCP_LOG_LEVEL": "DEBUG",
@@ -239,12 +249,12 @@ uvx . --help
 
 ## 🧪 Testing Your Installation
 
-### Test 1: Basic Todo Management
+### Test 1: Advanced Task Management
 1. **Open a project** in IntelliJ IDEA
 2. **Start a chat** with Gemini Code Assist
 3. **Try this command**:
    ```
-   Create a todo list for implementing user authentication with these tasks:
+   Create a comprehensive development plan for implementing user authentication with these tasks:
    - Set up JWT middleware
    - Create login/signup endpoints
    - Build user profile management
@@ -252,19 +262,29 @@ uvx . --help
    - Implement role-based permissions
    ```
 
-### Test 2: Code Analysis
+### Test 2: Terminal & Process Management
 ```
-Analyze the code quality of this project using the linting tools
-```
-
-### Test 3: File Operations
-```
-Search for all TODO comments in the codebase and create a summary
+Run a background process to compile the project and monitor its status
 ```
 
-### Test 4: Web Search
+### Test 3: Code Analysis & Quality
 ```
-Search for the latest best practices for Python async programming
+Analyze the code quality of this project using multi-language linting tools and provide a detailed report
+```
+
+### Test 4: File Operations & Search
+```
+Search for all TODO comments in the codebase, analyze patterns, and create a prioritized summary
+```
+
+### Test 5: Web Search & GitHub Integration
+```
+Search for the latest best practices for Python async programming and find relevant GitHub repositories
+```
+
+### Test 6: Memory Management
+```
+Store information about this project's architecture in persistent memory for future reference
 ```
 
 ## 🔧 Troubleshooting
@@ -307,9 +327,9 @@ Enable debug logging to troubleshoot issues:
 ```json
 {
   "mcpServers": {
-    "claude-todo-emulator": {
+    "cursor-emulator": {
       "command": "uvx",
-      "args": ["claude-todo-emulator"],
+      "args": ["cursor-emulator"],
       "env": {
         "MCP_LOG_LEVEL": "DEBUG"
       }
@@ -324,10 +344,10 @@ Test the MCP server directly:
 
 ```bash
 # Using uvx
-uvx claude-todo-emulator
+uvx cursor-emulator
 
 # Or locally
-cd /path/to/claude-todo-emulator
+cd /path/to/cursor-emulator
 python -m src.server
 ```
 
@@ -335,46 +355,51 @@ python -m src.server
 
 ### Development Workflow
 
-**1. Project Setup**
+**1. Project Analysis & Planning**
 ```
-Analyze this codebase structure and create a development plan with todos
+Analyze this codebase structure, identify patterns, and create a comprehensive development plan with prioritized tasks
 ```
 
 **2. Feature Development**
 ```
-Implement user authentication. Break this down into manageable tasks and track progress.
+Implement user authentication. Break this down into manageable tasks, track progress, and manage the implementation workflow.
 ```
 
-**3. Code Quality**
+**3. Code Quality & Analysis**
 ```
-Run linting on all Python files and fix any issues found
-```
-
-**4. Bug Investigation**
-```
-Search for error handling patterns in the codebase and identify potential issues
+Run multi-language linting on all files, perform semantic code analysis, and provide detailed quality reports
 ```
 
-**5. Documentation**
+**4. Bug Investigation & Debugging**
 ```
-Search the web for best practices on API documentation and update our docs accordingly
+Search for error handling patterns, analyze code quality issues, and identify potential problems using advanced search capabilities
+```
+
+**5. Research & Documentation**
+```
+Search the web for best practices, fetch relevant GitHub repositories, and update documentation with current standards
 ```
 
 ### Advanced Features
 
-**Memory Management**
+**Memory & Context Management**
 ```
-Store information about this project's architecture in memory for future reference
-```
-
-**GitHub Integration**
-```
-Fetch details for pull request #123 and analyze the changes
+Store project architecture, coding patterns, and domain knowledge in persistent memory for cross-session reference
 ```
 
-**Background Processes**
+**GitHub Integration & Collaboration**
 ```
-Start a long-running test suite in the background and monitor its progress
+Fetch pull request details, analyze code changes, apply patches, and manage collaborative development workflows
+```
+
+**Terminal & Process Management**
+```
+Execute build scripts, run test suites in background, monitor long-running processes, and manage development environments
+```
+
+**File Operations & Atomic Editing**
+```
+Perform complex file operations, atomic multi-file edits, and safe file management with rollback capabilities
 ```
 
 ## 🚀 Performance Tips
@@ -384,9 +409,9 @@ Start a long-running test suite in the background and monitor its progress
 ```json
 {
   "mcpServers": {
-    "claude-todo-emulator": {
+    "cursor-emulator": {
       "command": "uvx",
-      "args": ["claude-todo-emulator"],
+      "args": ["cursor-emulator"],
       "env": {
         "MCP_TIMEOUT": "60",
         "MCP_MAX_WORKERS": "4"
@@ -410,26 +435,26 @@ Start a long-running test suite in the background and monitor its progress
 
 ```bash
 # Using uvx (automatic updates)
-uvx --upgrade claude-todo-emulator
+uvx --upgrade cursor-emulator
 
 # Or manually
-pip install --upgrade claude-todo-emulator
+pip install --upgrade cursor-emulator
 ```
 
 ### Checking Version
 
 ```bash
-uvx claude-todo-emulator --version
+uvx cursor-emulator --version
 ```
 
 ### Uninstalling
 
 ```bash
 # Remove from uvx cache
-uvx --uninstall claude-todo-emulator
+uvx --uninstall cursor-emulator
 
 # Or remove pip package
-pip uninstall claude-todo-emulator
+pip uninstall cursor-emulator
 ```
 
 ## 📞 Support
@@ -452,7 +477,7 @@ uv --version
 python --version
 
 # Test MCP server directly
-uvx claude-todo-emulator --help
+uvx cursor-emulator --help
 
 # Check IntelliJ IDEA logs
 # Go to Help → Show Log in Explorer/Finder
@@ -460,15 +485,26 @@ uvx claude-todo-emulator --help
 
 ## 🎉 You're All Set!
 
-Once installed, your Gemini Code Assist will have access to all 19 powerful development tools. Try asking it to:
+Once installed, your Gemini Code Assist will be transformed into a powerful code assistant with access to all 19 advanced development tools. Try asking it to:
 
-- **"Create a comprehensive development plan for this project"**
-- **"Analyze the code quality and suggest improvements"**
-- **"Search for security vulnerabilities in the codebase"**
-- **"Help me implement a new feature step by step"**
+- **"Analyze this codebase structure and create a comprehensive development plan"**
+- **"Run multi-language linting and provide detailed code quality reports"**
+- **"Search for security vulnerabilities and performance issues in the codebase"**
+- **"Help me implement a new feature with step-by-step task management"**
+- **"Execute build scripts and monitor background processes"**
+- **"Search the web for best practices and fetch relevant GitHub repositories"**
+- **"Store project knowledge in persistent memory for future reference"**
 
-The MCP server will automatically manage tasks, provide code analysis, and maintain context across your development sessions.
+Cursor Emulator will automatically provide:
+- **Advanced task management** with visual progress tracking
+- **Terminal operations** with background process monitoring
+- **Code analysis** with multi-language linting and semantic search
+- **File operations** with atomic editing and safe management
+- **Web & GitHub integration** for research and collaboration
+- **Memory management** for persistent context across sessions
 
 ---
 
-**Need help?** Check the [GitHub repository](https://github.com/your-username/claude-todo-emulator) for more documentation and examples.
+**Need help?** Check the [GitHub repository](https://github.com/your-username/cursor-emulator) for more documentation and examples.
+
+**Transform your AI assistant into a powerful code assistant today!** 🚀

@@ -3,14 +3,14 @@ packages = ["src", "src.state", "src.tools"]
 package-data = { "src.state" = ["*.mdc"] }
 
 [project]
-name = "claude-todo-emulator"
+name = "cursor-emulator"
 version = "0.2.2"
-description = "This is an MCP server that emulates Claude Code's task management system, providing persistent todo functionality for AI coding assistants in IDEs like Cursor, Windsurf, and others."
+description = "Universal AI Code Assistant - Transform any AI assistant into a powerful code assistant using local MCP server with 19 advanced tools including task management, terminal operations, code analysis, file operations, web search, and memory management."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 authors = [{ name = "Joe Haddad", email = "joehaddad129@gmail.com" }]
-keywords = ["mcp", "claude", "todo", "task-management", "ai-assistant"]
+keywords = ["mcp", "cursor", "ai-assistant", "code-assistant", "terminal", "file-operations", "web-search", "memory-management", "universal"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
