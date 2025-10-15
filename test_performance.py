@@ -385,3 +385,4 @@ async def run_performance_benchmarks(mcp_client):
 
 if __name__ == "__main__":
     print("Performance benchmark module loaded")
+

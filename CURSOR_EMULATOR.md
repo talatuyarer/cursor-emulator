@@ -173,3 +173,4 @@ MIT License - Use freely in any project, commercial or open source.
 ---
 
 **Transform your AI assistant into a powerful code assistant today with Cursor Emulator!** 🚀
+

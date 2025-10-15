@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from typing import Any
+import json
 
 from fastmcp import FastMCP
 
@@ -70,30 +71,31 @@ async def TodoRead() -> dict[str, Any]:
         }
 
 
+# TodoWrite removed - use TodoWriteCompat instead for Gemini Code Assist compatibility
+
+
 @mcp.tool
-async def TodoWrite(todos: list[dict[str, Any]], merge: bool = False, clear: bool = False) -> dict[str, Any]:
+async def TodoWriteCompat(todos_json: str, merge: bool = False, clear: bool = False) -> dict[str, Any]:
     """
-    Write advanced todos with merge/update capabilities and visual indicators.
-
+    Write advanced todos with merge/update capabilities (Gemini Code Assist compatible version).
+    
     Parameters:
-        todos: List of todo items, each containing:
-            - id: Unique identifier for the todo (required)
-            - content: Todo description (required)
-            - status: Current status (optional: pending, in_progress, completed, cancelled)
-            - priority: Todo priority (optional: high, medium, low)
-            - metadata: Optional additional data
-        merge: Whether to merge with existing todos (optional, defaults to False)
-        clear: Whether to clear existing todos first (optional, defaults to False)
-
+        todos_json: JSON string containing list of todo items
+        merge: Whether to merge with existing todos (defaults to False)
+        clear: Whether to clear existing todos first (defaults to False)
+    
     Returns success status, todo count, summary, and formatted display.
     """
     try:
+        todos = json.loads(todos_json)
         params = {
             "todos": todos,
             "merge": merge,
             "clear": clear
         }
         return await todo_write(params)
+    except json.JSONDecodeError as e:
+        return {"error": {"code": "JSON_ERROR", "message": f"Invalid JSON: {str(e)}"}}
     except ValidationError as e:
         return {"error": {"code": "VALIDATION_ERROR", "message": str(e)}}
     except Exception as e:
@@ -106,10 +108,9 @@ async def TodoWrite(todos: list[dict[str, Any]], merge: bool = False, clear: boo
 
 
 @mcp.tool
-async def RunTerminalCmd(command: str, cwd: str | None = None, timeout: int = 30, 
+async def RunTerminalCmd(command: str, cwd: str = "", timeout: int = 30, 
                         sandbox: bool = True, is_background: bool = False, 
-                        env_vars: dict[str, str] | None = None, 
-                        process_id: str | None = None) -> dict[str, Any]:
+                        process_id: str = "") -> dict[str, Any]:
     """
     Execute a terminal command with advanced features including background execution, 
     environment variables, streaming output, and process management.
@@ -146,13 +147,11 @@ async def RunTerminalCmd(command: str, cwd: str | None = None, timeout: int = 30
             "sandbox": sandbox,
             "is_background": is_background
         }
-        if cwd is not None:
+        if cwd:  # If not empty string
             params["cwd"] = cwd
         if timeout != 30:
             params["timeout"] = timeout
-        if env_vars is not None:
-            params["env_vars"] = env_vars
-        if process_id is not None:
+        if process_id:  # If not empty string
             params["process_id"] = process_id
         
         return await run_terminal_cmd(params)
@@ -168,53 +167,60 @@ async def RunTerminalCmd(command: str, cwd: str | None = None, timeout: int = 30
 
 
 @mcp.tool
-async def ReadLints(paths: list[str] | None = None, languages: list[str] | None = None, 
-                   timeout: int = 30, recursive: bool = True) -> dict[str, Any]:
+async def RunTerminalCmdCompat(command: str, cwd: str = "", timeout: int = 30, 
+                              sandbox: bool = True, is_background: bool = False, 
+                              process_id: str = "", env_vars_json: str = "") -> dict[str, Any]:
     """
-    Read linter errors from the workspace with multi-language support.
-
-    Parameters:
-        paths: List of file/directory paths to check (optional, defaults to current directory)
-        languages: List of languages to check (optional, auto-detect if not provided)
-        timeout: Linter timeout in seconds (optional, defaults to 30, max 300)
-        recursive: Whether to search recursively in directories (optional, defaults to True)
-
-    Returns linting results with errors, warnings, and info grouped by severity.
+    Execute a terminal command (Gemini Code Assist compatible version).
     
-    Supported Languages:
-    - Python: ruff, flake8, pylint
-    - Java: checkstyle, spotbugs, pmd
-    - JavaScript: eslint, jshint
-    - TypeScript: eslint, tsc
-    - Go: golangci-lint, gofmt
-    - Rust: clippy, rustfmt
-    - C++: clang-tidy, cppcheck
+    Parameters:
+        command: The command to execute
+        cwd: Working directory (optional, defaults to workspace root)
+        timeout: Command timeout in seconds (optional, defaults to 30, 0 = no timeout)
+        sandbox: Enable security sandbox (optional, defaults to True)
+        is_background: Run command in background (optional, defaults to False)
+        process_id: Process ID for background commands (optional)
+        env_vars_json: Environment variables as JSON string (optional)
+    
+    Returns command results including stdout, stderr, return_code, execution_time,
+    streaming output, and process management information.
     """
     try:
-        params = {}
-        if paths is not None:
-            params["paths"] = paths
-        if languages is not None:
-            params["languages"] = languages
+        params = {
+            "command": command,
+            "sandbox": sandbox,
+            "is_background": is_background
+        }
+        if cwd:  # If not empty string
+            params["cwd"] = cwd
         if timeout != 30:
             params["timeout"] = timeout
-        if not recursive:
-            params["recursive"] = recursive
+        if process_id:  # If not empty string
+            params["process_id"] = process_id
+        if env_vars_json:  # If not empty string
+            try:
+                env_vars = json.loads(env_vars_json)
+                params["env_vars"] = env_vars
+            except json.JSONDecodeError as e:
+                return {"error": {"code": "JSON_ERROR", "message": f"Invalid env_vars JSON: {str(e)}"}}
         
-        return await read_lints(params)
+        return await run_terminal_cmd(params)
     except ValidationError as e:
         return {"error": {"code": "VALIDATION_ERROR", "message": str(e)}}
     except Exception as e:
         return {
             "error": {
-                "code": "LINT_ERROR",
-                "message": f"Failed to read lints: {str(e)}",
+                "code": "COMMAND_ERROR",
+                "message": f"Failed to execute command: {str(e)}",
             }
         }
 
 
+# ReadLints removed - use ReadLintsCompat instead for Gemini Code Assist compatibility
+
+
 @mcp.tool
-async def WebSearch(query: str, engine: str | None = None, max_results: int = 10, 
+async def WebSearch(query: str, engine: str = "", max_results: int = 10, 
                    timeout: int = 30, use_cache: bool = True) -> dict[str, Any]:
     """
     Perform a web search and return real-time results.
@@ -239,11 +245,12 @@ async def WebSearch(query: str, engine: str | None = None, max_results: int = 10
     try:
         params = {
             "query": query,
-            "engine": engine,
             "max_results": max_results,
             "timeout": timeout,
             "use_cache": use_cache
         }
+        if engine:  # If not empty string
+            params["engine"] = engine
         return await web_search(params)
     except ValidationError as e:
         return {"error": {"code": "VALIDATION_ERROR", "message": str(e)}}
@@ -256,43 +263,7 @@ async def WebSearch(query: str, engine: str | None = None, max_results: int = 10
         }
 
 
-@mcp.tool
-async def CodebaseSearch(query: str, target_directories: list[str] | None = None, 
-                        max_results: int = 20) -> dict[str, Any]:
-    """
-    Perform semantic codebase search to understand code by meaning.
-
-    Parameters:
-        query: Natural language search query (e.g., "How does authentication work?")
-        target_directories: List of directories to search (optional, defaults to current directory)
-        max_results: Maximum number of results (optional, defaults to 20, max 100)
-
-    Returns search results with context and relevance scoring.
-    
-    Features:
-    - Natural language query understanding
-    - Multi-language code support (Python, JavaScript, TypeScript, Java, Go, Rust, C++)
-    - Context extraction with surrounding code
-    - Intelligent result ranking
-    - Pattern-based semantic matching
-    - File structure analysis
-    """
-    try:
-        params = {
-            "query": query,
-            "target_directories": target_directories,
-            "max_results": max_results
-        }
-        return await codebase_search(params)
-    except ValidationError as e:
-        return {"error": {"code": "VALIDATION_ERROR", "message": str(e)}}
-    except Exception as e:
-        return {
-            "error": {
-                "code": "SEARCH_ERROR",
-                "message": f"Failed to perform codebase search: {str(e)}",
-            }
-        }
+# CodebaseSearch removed - use CodebaseSearchCompat instead for Gemini Code Assist compatibility
 
 
 @mcp.tool
@@ -335,32 +306,29 @@ async def SearchReplace(file_path: str, old_string: str, new_string: str,
         }
 
 
-@mcp.tool
-async def SearchReplaceMultiple(file_path: str, replacements: list[dict[str, Any]]) -> dict[str, Any]:
-    """
-    Perform multiple string replacements in a file.
+# SearchReplaceMultiple removed - use SearchReplaceMultipleCompat instead for Gemini Code Assist compatibility
 
+
+@mcp.tool
+async def SearchReplaceMultipleCompat(file_path: str, replacements_json: str) -> dict[str, Any]:
+    """
+    Perform multiple string replacements in a file (Gemini Code Assist compatible version).
+    
     Parameters:
         file_path: Path to the file to modify
-        replacements: List of replacement objects, each containing:
-            - old_string: String to find
-            - new_string: String to replace with
-            - replace_all: Whether to replace all occurrences (optional)
-
-    Returns operation result with total replacements made and details.
+        replacements_json: JSON string containing list of replacement objects
     
-    Features:
-    - Batch multiple replacements in a single operation
-    - Atomic file write (all or nothing)
-    - Detailed results for each replacement
-    - Efficient single file read/write cycle
+    Returns operation result with total replacements made and details.
     """
     try:
+        replacements = json.loads(replacements_json)
         params = {
             "file_path": file_path,
             "replacements": replacements
         }
         return await search_replace_multiple(params)
+    except json.JSONDecodeError as e:
+        return {"error": {"code": "JSON_ERROR", "message": f"Invalid JSON: {str(e)}"}}
     except ValidationError as e:
         return {"error": {"code": "VALIDATION_ERROR", "message": str(e)}}
     except Exception as e:
@@ -372,33 +340,29 @@ async def SearchReplaceMultiple(file_path: str, replacements: list[dict[str, Any
         }
 
 
-@mcp.tool
-async def MultiEdit(file_path: str, edits: list[dict[str, Any]]) -> dict[str, Any]:
-    """
-    Make multiple edits to a single file in one atomic operation.
+# MultiEdit and MultiEditValidate removed - use MultiEditCompat and MultiEditValidateCompat instead for Gemini Code Assist compatibility
 
+
+@mcp.tool
+async def MultiEditCompat(file_path: str, edits_json: str) -> dict[str, Any]:
+    """
+    Make multiple edits to a single file in one atomic operation (Gemini Code Assist compatible version).
+    
     Parameters:
         file_path: Path to the file to edit
-        edits: List of edit operations, each containing:
-            - old_string: String to find and replace (required)
-            - new_string: String to replace with (required)
-            - replace_all: Whether to replace all occurrences (optional, defaults to False)
-
-    Returns operation result with details of all edits applied.
+        edits_json: JSON string containing list of edit operations
     
-    Features:
-    - Atomic operation (all edits succeed or none are applied)
-    - Sequential processing (edits applied in order)
-    - Comprehensive error handling with rollback
-    - Detailed results for each edit operation
-    - File consistency guaranteed
+    Returns operation result with details of all edits applied.
     """
     try:
+        edits = json.loads(edits_json)
         params = {
             "file_path": file_path,
             "edits": edits
         }
         return await multi_edit(params)
+    except json.JSONDecodeError as e:
+        return {"error": {"code": "JSON_ERROR", "message": f"Invalid JSON: {str(e)}"}}
     except ValidationError as e:
         return {"error": {"code": "VALIDATION_ERROR", "message": str(e)}}
     except Exception as e:
@@ -411,28 +375,25 @@ async def MultiEdit(file_path: str, edits: list[dict[str, Any]]) -> dict[str, An
 
 
 @mcp.tool
-async def MultiEditValidate(file_path: str, edits: list[dict[str, Any]]) -> dict[str, Any]:
+async def MultiEditValidateCompat(file_path: str, edits_json: str) -> dict[str, Any]:
     """
-    Validate multi-edit operations without applying them.
-
+    Validate multi-edit operations without applying them (Gemini Code Assist compatible version).
+    
     Parameters:
         file_path: Path to the file to validate against
-        edits: List of edit operations to validate
-
-    Returns validation results showing which edits would succeed or fail.
+        edits_json: JSON string containing list of edit operations to validate
     
-    Features:
-    - Pre-validation of all edit operations
-    - Check string existence and occurrence counts
-    - Identify potential issues before applying edits
-    - Safe way to test complex edit sequences
+    Returns validation results showing which edits would succeed or fail.
     """
     try:
+        edits = json.loads(edits_json)
         params = {
             "file_path": file_path,
             "edits": edits
         }
         return await multi_edit_validate_only(params)
+    except json.JSONDecodeError as e:
+        return {"error": {"code": "JSON_ERROR", "message": f"Invalid JSON: {str(e)}"}}
     except ValidationError as e:
         return {"error": {"code": "VALIDATION_ERROR", "message": str(e)}}
     except Exception as e:
@@ -482,45 +443,7 @@ async def DeleteFile(target_file: str, explanation: str) -> dict[str, Any]:
         }
 
 
-@mcp.tool
-async def GlobFileSearch(glob_pattern: str, target_directory: str | None = None, 
-                        ignore_globs: list[str] | None = None) -> dict[str, Any]:
-    """
-    Search for files using glob patterns with comprehensive filtering and sorting.
-
-    Parameters:
-        glob_pattern: Glob pattern to match files (e.g., "*.py", "**/test_*.py", "src/**/*.js")
-        target_directory: Directory to search in (defaults to current directory)
-        ignore_globs: List of patterns to ignore (e.g., ["**/node_modules/**", "*.pyc", "**/__pycache__/**"])
-
-    Returns:
-        Dictionary with search results including file paths and metadata
-    
-    Features:
-    - Fast file discovery using glob patterns
-    - Recursive search with ** pattern support
-    - Ignore pattern support for common exclusions (node_modules, __pycache__, etc.)
-    - Results sorted by modification time (newest first)
-    - Cross-platform path handling
-    - Comprehensive error handling with specific error codes
-    - Support for complex glob patterns and filtering
-    """
-    try:
-        params = {
-            "glob_pattern": glob_pattern,
-            "target_directory": target_directory,
-            "ignore_globs": ignore_globs or []
-        }
-        return await glob_file_search(params)
-    except ValidationError as e:
-        return {"error": {"code": "VALIDATION_ERROR", "message": str(e)}}
-    except Exception as e:
-        return {
-            "error": {
-                "code": "SEARCH_ERROR",
-                "message": f"Failed to search for files: {str(e)}",
-            }
-        }
+# GlobFileSearch removed - use GlobFileSearchCompat instead for Gemini Code Assist compatibility
 
 
 
@@ -609,132 +532,10 @@ async def ApplyPatch(file_path: str, patch_content: str, dry_run: bool = False, 
         }
 
 
-@mcp.tool
-async def Grep(pattern: str, paths: list[str] | None = None, case_sensitive: bool = True, 
-              whole_word: bool = False, regex: bool = True, max_results: int = 1000,
-              include_patterns: list[str] | None = None, exclude_patterns: list[str] | None = None) -> dict[str, Any]:
-    """
-    Search for patterns in files using Linux grep command with comprehensive filtering.
-
-    Parameters:
-        pattern: Pattern to search for (required)
-        paths: List of paths to search in (optional, defaults to current directory)
-        case_sensitive: Whether search is case sensitive (optional, defaults to True)
-        whole_word: Whether to match whole words only (optional, defaults to False)
-        regex: Whether pattern is a regex (optional, defaults to True)
-        max_results: Maximum results per file (optional, defaults to 1000)
-        include_patterns: File patterns to include (optional, e.g., ["*.py", "*.js"])
-        exclude_patterns: File patterns to exclude (optional, e.g., ["*.pyc", "node_modules"])
-
-    Returns:
-        Dictionary with search results including:
-        - success: Whether the search was successful
-        - matches: List of matches with file, line_number, content, and absolute_path
-        - pattern: The search pattern used
-        - total_matches: Total number of matches found
-        - files_searched: Number of files searched
-        - files_matched: Number of files that contained matches
-        - search_paths: List of paths that were searched
-    """
-    try:
-        params = {
-            "pattern": pattern,
-            "paths": paths,
-            "case_sensitive": case_sensitive,
-            "whole_word": whole_word,
-            "regex": regex,
-            "max_results": max_results,
-            "include_patterns": include_patterns,
-            "exclude_patterns": exclude_patterns
-        }
-        
-        return await grep(params)
-    except ValidationError as e:
-        return {"error": {"code": "VALIDATION_ERROR", "message": str(e)}}
-    except Exception as e:
-        return {
-            "error": {
-                "code": "GREP_ERROR",
-                "message": f"Failed to perform grep search: {str(e)}",
-            }
-        }
+# Grep removed - use GrepCompat instead for Gemini Code Assist compatibility
 
 
-@mcp.tool
-async def UpdateMemory(action: str, key: str | None = None, content: str | None = None, 
-                      tags: list[str] | None = None, expires_at: str | None = None,
-                      metadata: dict[str, Any] | None = None, query: str | None = None,
-                      limit: int | None = None) -> dict[str, Any]:
-    """
-    Manage persistent memories with create, update, delete, get, list, and search operations.
-
-    Parameters:
-        action: Action to perform (required: create, update, delete, get, list, search)
-        key: Memory key (required for update, delete, get; optional for create)
-        content: Memory content (required for create, optional for update)
-        tags: List of tags for categorization (optional)
-        expires_at: Expiration date in ISO format (optional, e.g., "2024-12-31T23:59:59")
-        metadata: Additional metadata dictionary (optional)
-        query: Search query (required for search action)
-        limit: Maximum number of results (optional, defaults to 100 for list, 20 for search)
-
-    Returns:
-        Dictionary with operation result including:
-        - success: Whether the operation was successful
-        - action: The action performed
-        - key: The memory key
-        - memory: The memory data (for create, update, get actions)
-        - message: Human-readable result message
-        - total_memories: Total number of memories in storage
-        - error_code: Error code if operation failed
-        - error_details: Detailed error information
-
-    Features:
-    - Persistent storage across sessions
-    - Automatic expiration handling
-    - Tag-based organization and filtering
-    - Content and metadata search
-    - Access count tracking
-    - Atomic operations with rollback
-    - Comprehensive error handling
-    - Memory deduplication
-    - Automatic cleanup of expired memories
-    """
-    try:
-        params = {
-            "action": action,
-            "key": key,
-            "content": content,
-            "tags": tags,
-            "expires_at": expires_at,
-            "metadata": metadata,
-            "query": query,
-            "limit": limit
-        }
-        
-        return await update_memory(params)
-    except ValidationError as e:
-        return {
-            "success": False,
-            "action": action,
-            "key": key or "unknown",
-            "memory": None,
-            "message": f"Validation error: {str(e)}",
-            "total_memories": 0,
-            "error_code": "VALIDATION_ERROR",
-            "error_details": str(e)
-        }
-    except Exception as e:
-        return {
-            "success": False,
-            "action": action,
-            "key": key or "unknown",
-            "memory": None,
-            "message": f"Memory operation failed: {str(e)}",
-            "total_memories": 0,
-            "error_code": "OPERATION_ERROR",
-            "error_details": str(e)
-        }
+# UpdateMemory removed - use UpdateMemoryCompat instead for Gemini Code Assist compatibility
 
 
 @mcp.tool
@@ -778,6 +579,266 @@ async def KillBackgroundProcess(process_id: str) -> dict[str, Any]:
                 "code": "PROCESS_ERROR",
                 "message": f"Failed to kill process: {str(e)}",
             }
+        }
+
+
+@mcp.tool
+async def ReadLintsCompat(paths_json: str = "[]", languages_json: str = "[]", 
+                         timeout: int = 30, recursive: bool = True) -> dict[str, Any]:
+    """
+    Read linter errors from the workspace (Gemini Code Assist compatible version).
+    
+    Parameters:
+        paths_json: JSON string containing list of file/directory paths to check
+        languages_json: JSON string containing list of languages to check
+        timeout: Linter timeout in seconds (optional, defaults to 30, max 300)
+        recursive: Whether to search recursively in directories (optional, defaults to True)
+    
+    Returns linting results with errors, warnings, and info grouped by severity.
+    """
+    try:
+        params = {
+            "timeout": timeout,
+            "recursive": recursive
+        }
+        
+        if paths_json != "[]":
+            try:
+                paths = json.loads(paths_json)
+                params["paths"] = paths
+            except json.JSONDecodeError as e:
+                return {"error": {"code": "JSON_ERROR", "message": f"Invalid paths JSON: {str(e)}"}}
+        
+        if languages_json != "[]":
+            try:
+                languages = json.loads(languages_json)
+                params["languages"] = languages
+            except json.JSONDecodeError as e:
+                return {"error": {"code": "JSON_ERROR", "message": f"Invalid languages JSON: {str(e)}"}}
+        
+        return await read_lints(params)
+    except ValidationError as e:
+        return {"error": {"code": "VALIDATION_ERROR", "message": str(e)}}
+    except Exception as e:
+        return {
+            "error": {
+                "code": "LINT_ERROR",
+                "message": f"Failed to read lints: {str(e)}",
+            }
+        }
+
+
+@mcp.tool
+async def CodebaseSearchCompat(query: str, target_directories_json: str = "[]", 
+                              max_results: int = 20) -> dict[str, Any]:
+    """
+    Perform semantic codebase search (Gemini Code Assist compatible version).
+    
+    Parameters:
+        query: Natural language search query
+        target_directories_json: JSON string containing list of directories to search
+        max_results: Maximum number of results (optional, defaults to 20, max 100)
+    
+    Returns search results with context and relevance scoring.
+    """
+    try:
+        params = {
+            "query": query,
+            "max_results": max_results
+        }
+        
+        if target_directories_json != "[]":
+            try:
+                target_directories = json.loads(target_directories_json)
+                params["target_directories"] = target_directories
+            except json.JSONDecodeError as e:
+                return {"error": {"code": "JSON_ERROR", "message": f"Invalid target_directories JSON: {str(e)}"}}
+        
+        return await codebase_search(params)
+    except ValidationError as e:
+        return {"error": {"code": "VALIDATION_ERROR", "message": str(e)}}
+    except Exception as e:
+        return {
+            "error": {
+                "code": "SEARCH_ERROR",
+                "message": f"Failed to perform codebase search: {str(e)}",
+            }
+        }
+
+
+@mcp.tool
+async def GlobFileSearchCompat(glob_pattern: str, target_directory: str = "", 
+                              ignore_globs_json: str = "[]") -> dict[str, Any]:
+    """
+    Search for files using glob patterns (Gemini Code Assist compatible version).
+    
+    Parameters:
+        glob_pattern: Glob pattern to match files
+        target_directory: Directory to search in (defaults to current directory)
+        ignore_globs_json: JSON string containing list of patterns to ignore
+    
+    Returns search results including file paths and metadata.
+    """
+    try:
+        params = {
+            "glob_pattern": glob_pattern
+        }
+        
+        if target_directory:  # If not empty string
+            params["target_directory"] = target_directory
+        
+        if ignore_globs_json != "[]":
+            try:
+                ignore_globs = json.loads(ignore_globs_json)
+                params["ignore_globs"] = ignore_globs
+            except json.JSONDecodeError as e:
+                return {"error": {"code": "JSON_ERROR", "message": f"Invalid ignore_globs JSON: {str(e)}"}}
+        
+        return await glob_file_search(params)
+    except ValidationError as e:
+        return {"error": {"code": "VALIDATION_ERROR", "message": str(e)}}
+    except Exception as e:
+        return {
+            "error": {
+                "code": "SEARCH_ERROR",
+                "message": f"Failed to search for files: {str(e)}",
+            }
+        }
+
+
+@mcp.tool
+async def GrepCompat(pattern: str, paths_json: str = "[]", case_sensitive: bool = True, 
+                    whole_word: bool = False, regex: bool = True, max_results: int = 1000,
+                    include_patterns_json: str = "[]", exclude_patterns_json: str = "[]") -> dict[str, Any]:
+    """
+    Search for patterns in files using Linux grep command (Gemini Code Assist compatible version).
+    
+    Parameters:
+        pattern: Pattern to search for
+        paths_json: JSON string containing list of paths to search in
+        case_sensitive: Whether search is case sensitive (optional, defaults to True)
+        whole_word: Whether to match whole words only (optional, defaults to False)
+        regex: Whether pattern is a regex (optional, defaults to True)
+        max_results: Maximum results per file (optional, defaults to 1000)
+        include_patterns_json: JSON string containing file patterns to include
+        exclude_patterns_json: JSON string containing file patterns to exclude
+    
+    Returns search results including matches and metadata.
+    """
+    try:
+        params = {
+            "pattern": pattern,
+            "case_sensitive": case_sensitive,
+            "whole_word": whole_word,
+            "regex": regex,
+            "max_results": max_results
+        }
+        
+        if paths_json != "[]":
+            try:
+                paths = json.loads(paths_json)
+                params["paths"] = paths
+            except json.JSONDecodeError as e:
+                return {"error": {"code": "JSON_ERROR", "message": f"Invalid paths JSON: {str(e)}"}}
+        
+        if include_patterns_json != "[]":
+            try:
+                include_patterns = json.loads(include_patterns_json)
+                params["include_patterns"] = include_patterns
+            except json.JSONDecodeError as e:
+                return {"error": {"code": "JSON_ERROR", "message": f"Invalid include_patterns JSON: {str(e)}"}}
+        
+        if exclude_patterns_json != "[]":
+            try:
+                exclude_patterns = json.loads(exclude_patterns_json)
+                params["exclude_patterns"] = exclude_patterns
+            except json.JSONDecodeError as e:
+                return {"error": {"code": "JSON_ERROR", "message": f"Invalid exclude_patterns JSON: {str(e)}"}}
+        
+        return await grep(params)
+    except ValidationError as e:
+        return {"error": {"code": "VALIDATION_ERROR", "message": str(e)}}
+    except Exception as e:
+        return {
+            "error": {
+                "code": "GREP_ERROR",
+                "message": f"Failed to perform grep search: {str(e)}",
+            }
+        }
+
+
+@mcp.tool
+async def UpdateMemoryCompat(action: str, key: str = "", content: str = "", 
+                            tags_json: str = "[]", expires_at: str = "",
+                            metadata_json: str = "{}", query: str = "",
+                            limit: int = 0) -> dict[str, Any]:
+    """
+    Manage persistent memories (Gemini Code Assist compatible version).
+    
+    Parameters:
+        action: Action to perform (required: create, update, delete, get, list, search)
+        key: Memory key (required for update, delete, get; optional for create)
+        content: Memory content (required for create, optional for update)
+        tags_json: JSON string containing list of tags for categorization
+        expires_at: Expiration date in ISO format
+        metadata_json: JSON string containing additional metadata dictionary
+        query: Search query (required for search action)
+        limit: Maximum number of results (optional, defaults to 100 for list, 20 for search)
+    
+    Returns operation result including success status and memory data.
+    """
+    try:
+        params = {
+            "action": action
+        }
+        
+        if key:  # If not empty string
+            params["key"] = key
+        if content:  # If not empty string
+            params["content"] = content
+        if expires_at:  # If not empty string
+            params["expires_at"] = expires_at
+        if query:  # If not empty string
+            params["query"] = query
+        if limit > 0:
+            params["limit"] = limit
+        
+        if tags_json != "[]":
+            try:
+                tags = json.loads(tags_json)
+                params["tags"] = tags
+            except json.JSONDecodeError as e:
+                return {"error": {"code": "JSON_ERROR", "message": f"Invalid tags JSON: {str(e)}"}}
+        
+        if metadata_json != "{}":
+            try:
+                metadata = json.loads(metadata_json)
+                params["metadata"] = metadata
+            except json.JSONDecodeError as e:
+                return {"error": {"code": "JSON_ERROR", "message": f"Invalid metadata JSON: {str(e)}"}}
+        
+        return await update_memory(params)
+    except ValidationError as e:
+        return {
+            "success": False,
+            "action": action,
+            "key": key or "unknown",
+            "memory": None,
+            "message": f"Validation error: {str(e)}",
+            "total_memories": 0,
+            "error_code": "VALIDATION_ERROR",
+            "error_details": str(e)
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "action": action,
+            "key": key or "unknown",
+            "memory": None,
+            "message": f"Memory operation failed: {str(e)}",
+            "total_memories": 0,
+            "error_code": "OPERATION_ERROR",
+            "error_details": str(e)
         }
 
 

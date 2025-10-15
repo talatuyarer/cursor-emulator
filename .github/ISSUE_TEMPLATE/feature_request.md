@@ -37,3 +37,4 @@ Add any other context or screenshots about the feature request here.
 
 **Implementation Ideas (optional)**
 If you have ideas about how this feature could be implemented, please share them here.
+

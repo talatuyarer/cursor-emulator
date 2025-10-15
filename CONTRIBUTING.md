@@ -271,3 +271,4 @@ By contributing to Cursor Emulator, you agree that your contributions will be li
 **Thank you for contributing to Cursor Emulator!** 🚀
 
 Together, we're building the future of AI-assisted development.
+

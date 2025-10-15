@@ -298,3 +298,4 @@ If tests fail:
 5. **Verify error handling** provides appropriate responses
 
 The test suite is designed to help you build a production-ready MCP server that provides the same high-quality experience as built-in AI assistant tools! 🚀
+
